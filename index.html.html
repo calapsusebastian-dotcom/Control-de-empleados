@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Salidas</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#111827;--ink2:#374151;--ink3:#6b7280;--ink4:#9ca3af;
+  --paper:#fff;--paper2:#f9fafb;--paper3:#f3f4f6;
+  --border:#e5e7eb;--border2:#d1d5db;
+  --blue:#1d4ed8;--blue-d:#1e40af;--blue-l:#eff6ff;--blue-m:#bfdbfe;
+  --green:#16a34a;--green-d:#15803d;--green-l:#f0fdf4;--green-m:#bbf7d0;
+  --amber:#d97706;--amber-l:#fffbeb;--amber-m:#fde68a;
+  --red:#dc2626;--red-l:#fef2f2;--red-m:#fecaca;
+  --purple:#7c3aed;--purple-l:#f5f3ff;
+  --r:10px;--r-sm:7px;--r-lg:14px;
+  --sh:0 1px 3px rgba(0,0,0,.07);
+  --sh-md:0 4px 16px rgba(0,0,0,.09);
+  --sh-lg:0 16px 48px rgba(0,0,0,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Outfit',sans-serif;background:#eef2f7;color:var(--ink);min-height:100vh;font-size:14px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{transform:translateX(50px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes rot{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ── LANDING ── */
+#sc-land{align-items:center;justify-content:center;background:#0f172a;position:relative;overflow:hidden;}
+#sc-land::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(29,78,216,.2) 0%,transparent 70%);top:-200px;left:-180px;}
+#sc-land::after{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.15) 0%,transparent 70%);bottom:-160px;right:-120px;}
+.land-inner{position:relative;z-index:1;text-align:center;max-width:440px;padding:2rem;animation:fadeUp .5s ease-out;}
+.land-logo{width:76px;height:76px;background:linear-gradient(135deg,#1d4ed8,#7c3aed);border-radius:20px;margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 20px 48px rgba(0,0,0,.4);}
+.land-title{font-size:30px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:5px;}
+.land-sub{color:rgba(255,255,255,.38);font-size:14px;margin-bottom:2.5rem;}
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:360px;margin:0 auto;}
+.mc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);padding:1.75rem 1rem;cursor:pointer;transition:all .2s;color:white;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.mc:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);transform:translateY(-3px);}
+.mc-ico{font-size:32px;}
+.mc-t{font-size:15px;font-weight:600;}
+.mc-d{font-size:11px;opacity:.4;text-align:center;}
+.fb-bar{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:7px;z-index:2;}
+.fb-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite;}
+
+/* ── LOGIN ── */
+#sc-login{align-items:center;justify-content:center;background:#eef2f7;padding:1rem;}
+.lbox{background:var(--paper);border:1px solid var(--border);border-radius:var(--r-lg);padding:2.25rem;width:100%;max-width:390px;box-shadow:var(--sh-md);animation:fadeUp .3s ease-out;}
+.lback{background:none;border:none;color:var(--ink3);font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer;margin-bottom:1.5rem;display:flex;align-items:center;gap:5px;}
+.lback:hover{color:var(--ink);}
+.lava{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto .875rem;}
+.ltitle{font-size:20px;font-weight:700;text-align:center;margin-bottom:3px;}
+.lsub{font-size:13px;color:var(--ink3);text-align:center;margin-bottom:1.75rem;}
+.lload{display:flex;align-items:center;justify-content:center;gap:10px;padding:1rem;color:var(--ink3);font-size:13px;}
+.emp-prev{background:var(--blue-l);border:1px solid var(--blue-m);border-radius:var(--r-sm);padding:10px 13px;margin-bottom:12px;display:none;}
+.ep-name{font-size:13px;font-weight:700;color:var(--blue-d);}
+
+/* ── TOPBAR ── */
+.topbar{height:58px;background:var(--paper);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:50;flex-shrink:0;box-shadow:var(--sh);}
+.tb-l{display:flex;align-items:center;gap:11px;}
+.tb-ico{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.tb-ico.e{background:var(--blue-l);}
+.tb-ico.a{background:var(--purple-l);}
+.tb-name{font-size:15px;font-weight:700;}
+.tb-role{font-size:11px;color:var(--ink3);}
+.tb-r{display:flex;align-items:center;gap:9px;}
+.tb-clk{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink3);}
+
+/* ── BODY WRAP ── */
+.wrap{flex:1;overflow-y:auto;padding:1.5rem;max-width:1240px;margin:0 auto;width:100%;}
+
+/* ── CARDS ── */
+.card{background:var(--paper);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+.ch{padding:.875rem 1.125rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--paper2);}
+.ct{font-size:13px;font-weight:600;color:var(--ink2);display:flex;align-items:center;gap:7px;}
+.cb{padding:1.125rem;}
+
+/* ── FORM ── */
+.fg{margin-bottom:12px;}
+.fg label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3);margin-bottom:4px;}
+.fi{width:100%;border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:9px 12px;font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper);outline:none;transition:border-color .2s,box-shadow .2s;}
+.fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.07);}
+textarea.fi{resize:vertical;min-height:68px;}
+select.fi{cursor:pointer;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+.chip{background:var(--paper2);border:1px solid var(--border2);border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--ink2);transition:all .15s;}
+.chip:hover{background:var(--blue-l);border-color:var(--blue-m);color:var(--blue);}
+
+/* ── BUTTONS ── */
+.btn{border:none;border-radius:var(--r-sm);padding:9px 16px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn:active{transform:scale(.98);}
+.btn-blue{background:var(--blue);color:white;}.btn-blue:hover{background:var(--blue-d);}
+.btn-green{background:var(--green);color:white;}.btn-green:hover{background:var(--green-d);}
+.btn-red{background:var(--red);color:white;}.btn-red:hover{background:#b91c1c;}
+.btn-ink{background:var(--ink);color:white;}.btn-ink:hover{background:#1f2937;}
+.btn-og{background:var(--paper2);border:1px solid var(--border);color:var(--ink2);}.btn-og:hover{background:var(--paper3);}
+.btn-full{width:100%;justify-content:center;}
+.btn-xs{padding:5px 10px;font-size:11px;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-logout{background:none;border:none;color:var(--ink3);font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;padding:6px 10px;border-radius:var(--r-sm);}
+.btn-logout:hover{background:var(--red-l);color:var(--red);}
+.btn-ghost{background:var(--paper2);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 12px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:500;color:var(--ink2);cursor:pointer;}
+.btn-ghost:hover{background:var(--paper3);}
+.btn-enter{width:100%;padding:12px;margin-top:6px;background:var(--ink);color:white;border:none;border-radius:var(--r-sm);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-enter:hover{background:#1f2937;}
+.btn-enter:disabled{opacity:.55;cursor:default;}
+
+/* ── TABLE ── */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead tr{background:var(--paper2);border-bottom:1.5px solid var(--border);}
+th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);white-space:nowrap;}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--paper2);}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink3);}
+.dur{background:var(--blue-l);color:var(--blue-d);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;}
+.ava{width:30px;height:30px;border-radius:50%;background:var(--blue);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-right:8px;}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.b-out{background:var(--amber-l);color:#92400e;}.b-out::before{background:var(--amber);}
+.b-back{background:var(--green-l);color:#14532d;}.b-back::before{background:var(--green);}
+.b-late{background:var(--red-l);color:#7f1d1d;}.b-late::before{background:var(--red);}
+
+/* ── EMPLOYEE SCREEN ── */
+.hero{background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border-radius:var(--r);padding:1.5rem;color:white;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.hero-name{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:2px;}
+.hero-sub{font-size:13px;opacity:.55;}
+.hero-date{font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.4;text-align:right;}
+.ao{background:linear-gradient(135deg,var(--amber-l),#fef9c3);border:1.5px solid var(--amber-m);border-radius:var(--r);padding:1.25rem;margin-bottom:1.25rem;display:none;animation:fadeUp .3s ease-out;}
+.ao-t{font-size:13px;font-weight:700;color:var(--amber);margin-bottom:.5rem;}
+.ao-row{display:flex;gap:1.25rem;flex-wrap:wrap;margin-bottom:.75rem;}
+.ao-i{font-size:12px;color:var(--amber);}
+.ao-i strong{font-weight:700;}
+.egrid{display:grid;grid-template-columns:350px 1fr;gap:1.25rem;align-items:start;}
+@media(max-width:700px){.egrid{grid-template-columns:1fr;}}
+
+/* ── ADMIN STATS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem;}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr;}}
+.stat{background:var(--paper);border:1px solid var(--border);border-radius:var(--r);padding:.875rem 1rem;display:flex;align-items:center;gap:11px;box-shadow:var(--sh);}
+.sico{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.sn{font-size:22px;font-weight:800;color:var(--ink);line-height:1;}
+.sl{font-size:11px;color:var(--ink3);margin-top:1px;}
+
+/* ── TOOLBAR ── */
+.tbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:.875rem 1.125rem;background:var(--paper2);border-bottom:1px solid var(--border);}
+.sbox{position:relative;flex:1;min-width:160px;}
+.sbox .fi{padding-left:30px;}
+.sico2{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink4);pointer-events:none;}
+.fsel{border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;font-family:'Outfit',sans-serif;font-size:12px;color:var(--ink2);background:var(--paper);outline:none;}
+
+/* ── GESTIONAR EMPLEADOS (ADMIN) ── */
+.emp-item{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-bottom:1px solid var(--border);}
+.emp-item:last-child{border-bottom:none;}
+.emp-item:hover{background:var(--paper2);}
+.prog-wrap{background:var(--paper3);border-radius:20px;height:8px;overflow:hidden;margin:8px 0;}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--purple-l));border-radius:20px;transition:width .3s;width:0%;}
+.prog-txt{font-size:11px;color:var(--ink3);text-align:center;}
+.count-b{background:var(--blue-l);color:var(--blue-d);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:600;}
+.dropz{border:2px dashed var(--border2);border-radius:var(--r);padding:1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--paper2);}
+.dropz:hover,.dropz.over{border-color:var(--blue);background:var(--blue-l);}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(10,15,25,.55);z-index:200;align-items:center;justify-content:center;padding:1rem;}
+.overlay.open{display:flex;}
+.modal{background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--sh-lg);width:100%;max-width:400px;overflow:hidden;animation:fadeUp .2s ease-out;}
+.mh{background:var(--ink);color:white;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:600;}
+.mx{background:none;border:none;color:white;font-size:18px;cursor:pointer;opacity:.6;line-height:1;}.mx:hover{opacity:1;}
+.mb{padding:1.5rem;}
+.mf{padding:.875rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;}
+
+/* ── TOAST ── */
+#toasts{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:7px;pointer-events:none;}
+.toast{background:var(--paper);border:1px solid var(--border);border-radius:var(--r-sm);box-shadow:var(--sh-md);padding:10px 14px;min-width:230px;display:flex;align-items:center;gap:8px;font-size:13px;animation:slideIn .2s ease-out;pointer-events:auto;}
+.toast.ok{border-left:3px solid var(--green);}
+.toast.err{border-left:3px solid var(--red);}
+.toast.inf{border-left:3px solid var(--blue);}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--ink3);}
+.empty-ico{font-size:36px;margin-bottom:8px;}
+.empty h3{font-size:14px;font-weight:600;color:var(--ink2);margin-bottom:3px;}
+.empty p{font-size:12px;}
+
+/* ── SPIN ── */
+.spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:rot .6s linear infinite;display:inline-block;}
+.spin-d{border-color:rgba(0,0,0,.1);border-top-color:var(--ink3);}
+</style>
+</head>
+<body>
+
+<!-- ══ LANDING ══ -->
+<div class="screen active" id="sc-land">
+  <div class="fb-bar"><div class="fb-dot"></div><span>Firebase</span></div>
+  <div class="land-inner">
+    <div class="land-logo">🏢</div>
+    <div class="land-title">Control de Salidas</div>
+    <div class="land-sub">Sistema de registro del personal</div>
+    <div class="mode-cards">
+      <div class="mc" onclick="goLogin('emp')">
+        <div class="mc-ico">👤</div>
+        <div class="mc-t">Empleado</div>
+        <div class="mc-d">Registrar mis salidas</div>
+      </div>
+      <div class="mc" onclick="goLogin('adm')">
+        <div class="mc-ico">🛡️</div>
+        <div class="mc-t">Administrador</div>
+        <div class="mc-d">Ver todos los registros</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div class="screen" id="sc-login">
+  <div class="lbox">
+    <button class="lback" onclick="show('sc-land')">← Volver</button>
+    <div class="lava" id="lava" style="background:var(--blue-l);">👤</div>
+    <div class="ltitle" id="ltitle">Acceso Empleado</div>
+    <div class="lsub" id="lsub">Selecciona tu nombre</div>
+
+    <!-- EMP FORM -->
+    <div id="lf-emp">
+      <div class="fg">
+        <label>Tu nombre</label>
+        <div class="lload" id="l-load"><div class="spin spin-d"></div> Cargando empleados...</div>
+        <select class="fi" id="emp-sel" style="display:none;" onchange="onEmpSel()">
+          <option value="">-- Selecciona tu nombre --</option>
+        </select>
+      </div>
+      <div class="emp-prev" id="ep-prev">
+        <div class="ep-name" id="ep-name">—</div>
+      </div>
+    </div>
+
+    <!-- ADM FORM -->
+    <div id="lf-adm" style="display:none;">
+      <div class="fg"><label>Usuario</label><input class="fi" id="a-user" placeholder="admin" /></div>
+      <div class="fg"><label>Contraseña</label><input class="fi" type="password" id="a-pass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+    </div>
+
+    <button class="btn-enter" id="btn-enter" onclick="doLogin()">Entrar →</button>
+  </div>
+</div>
+
+<!-- ══ EMPLEADO ══ -->
+<div class="screen" id="sc-emp">
+  <div class="topbar">
+    <div class="tb-l">
+      <div class="tb-ico e">👤</div>
+      <div><div class="tb-name" id="tb-en">—</div><div class="tb-role">Empleado</div></div>
+    </div>
+    <div class="tb-r">
+      <div class="tb-clk" id="clk-e">--:--</div>
+      <button class="btn-logout" onclick="logout()">Salir</button>
+    </div>
+  </div>
+  <div class="wrap">
+    <!-- Hero -->
+    <div class="hero">
+      <div>
+        <div class="hero-name" id="h-name">—</div>
+        <div class="hero-sub" id="h-sub">Bienvenido</div>
+      </div>
+      <div class="hero-date" id="h-date">—</div>
+    </div>
+
+    <!-- Banner: actualmente fuera -->
+    <div class="ao" id="ao">
+      <div class="ao-t">🚶 Actualmente fuera de la oficina</div>
+      <div class="ao-row">
+        <span class="ao-i">📍 <strong id="ao-lugar">—</strong></span>
+        <span class="ao-i">🕐 Salida: <strong id="ao-sal">—</strong></span>
+        <span class="ao-i">⏰ Regreso est.: <strong id="ao-reg">—</strong></span>
+      </div>
+      <button class="btn btn-green btn-sm" onclick="openEmpReg()">✅ Registrar mi regreso</button>
+    </div>
+
+    <div class="egrid">
+      <!-- Formulario salida -->
+      <div class="card" id="fcard">
+        <div class="ch"><span class="ct">🚀 Registrar Salida</span></div>
+        <div class="cb">
+          <div class="fg">
+            <label>Destino *</label>
+            <div class="chips">
+              <span class="chip" onclick="sp('Banco')">🏦 Banco</span>
+              <span class="chip" onclick="sp('Cliente')">🤝 Cliente</span>
+              <span class="chip" onclick="sp('Médico')">🏥 Médico</span>
+              <span class="chip" onclick="sp('Trámite Gov.')">🏛️ Trámite</span>
+              <span class="chip" onclick="sp('Almacén')">📦 Almacén</span>
+              <span class="chip" onclick="sp('Comida')">🍽️ Comida</span>
+            </div>
+            <input class="fi" id="f-lugar" placeholder="O escribe el destino..." />
+          </div>
+          <div class="fr">
+            <div class="fg"><label>Hora salida *</label><input class="fi" type="time" id="f-sal" /></div>
+            <div class="fg"><label>Regreso esperado</label><input class="fi" type="time" id="f-reg" /></div>
+          </div>
+          <div class="fg"><label>Motivo (opcional)</label><textarea class="fi" id="f-mot" placeholder="Breve descripción..."></textarea></div>
+          <button class="btn btn-blue btn-full" id="btn-sal" onclick="empSalida()">🚀 Registrar mi salida</button>
+        </div>
+      </div>
+
+      <!-- Mis registros hoy -->
+      <div class="card">
+        <div class="ch"><span class="ct">📋 Mis salidas de hoy</span></div>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Destino</th><th>Salida</th><th>Regr.Est.</th><th>Regr.Real</th><th>Duración</th><th>Estado</th></tr></thead>
+            <tbody id="emp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div class="screen" id="sc-adm">
+  <div class="topbar">
+    <div class="tb-l">
+      <div class="tb-ico a">🛡️</div>
+      <div><div class="tb-name">Administrador</div><div class="tb-role">Vista completa del sistema</div></div>
+    </div>
+    <div class="tb-r">
+      <div class="tb-clk" id="clk-a">--:--</div>
+      <button class="btn-ghost" onclick="toggleEmpPanel()">👥 Empleados</button>
+      <button class="btn-ghost" onclick="admCSV()">⬇ CSV</button>
+      <button class="btn-logout" onclick="logout()">Salir</button>
+    </div>
+  </div>
+  <div class="wrap">
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat"><div class="sico" style="background:var(--blue-l);">👥</div><div><div class="sn" id="st-tot">0</div><div class="sl">Total</div></div></div>
+      <div class="stat"><div class="sico" style="background:var(--amber-l);">🚶</div><div><div class="sn" id="st-out">0</div><div class="sl">Fuera</div></div></div>
+      <div class="stat"><div class="sico" style="background:var(--green-l);">✅</div><div><div class="sn" id="st-bk">0</div><div class="sl">Regresaron</div></div></div>
+      <div class="stat"><div class="sico" style="background:var(--red-l);">⏰</div><div><div class="sn" id="st-lt">0</div><div class="sl">Con retraso</div></div></div>
+    </div>
+
+    <!-- PANEL GESTIONAR EMPLEADOS -->
+    <div class="card" id="emp-panel" style="display:none;margin-bottom:1.25rem;">
+      <div class="ch">
+        <span class="ct">👥 Gestionar Empleados</span>
+        <button class="btn btn-og btn-xs" onclick="toggleEmpPanel()">✕ Cerrar</button>
+      </div>
+      <div class="cb">
+        <!-- Agregar uno por uno -->
+        <div style="display:flex;gap:10px;margin-bottom:1.25rem;">
+          <input class="fi" id="new-emp" placeholder="Nombre completo del nuevo empleado..." style="flex:1;" onkeydown="if(event.key==='Enter')admAddEmp()" />
+          <button class="btn btn-green" onclick="admAddEmp()">➕ Agregar</button>
+        </div>
+
+        <!-- Lista actual -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:600;color:var(--ink2);">Lista de empleados <span class="count-b" id="emp-count">0</span></div>
+          <input class="fi" id="emp-search" placeholder="Buscar..." style="width:200px;" oninput="renderEmpList()" />
+        </div>
+        <div style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm);" id="emp-list"></div>
+
+        <!-- Importar Excel -->
+        <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:8px;">📤 Importar desde Excel / CSV</div>
+          <div class="dropz" id="dropz"
+            onclick="document.getElementById('finput').click()"
+            ondragover="event.preventDefault();this.classList.add('over')"
+            ondragleave="this.classList.remove('over')"
+            ondrop="onDrop(event)">
+            <div style="font-size:28px;margin-bottom:6px;">📂</div>
+            <div style="font-size:13px;font-weight:600;color:var(--ink2);">Arrastra tu Excel o CSV aquí</div>
+            <div style="font-size:11px;color:var(--ink3);margin-top:2px;">o haz clic para seleccionar</div>
+          </div>
+          <input type="file" id="finput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="onFile(this.files[0])" />
+          <div id="import-sec" style="display:none;margin-top:10px;">
+            <div style="font-size:12px;color:var(--ink3);margin-bottom:6px;">
+              <strong id="import-count">0</strong> empleados encontrados
+              <span style="margin-left:8px;">Columna de nombres:</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select class="fsel" id="col-sel" onchange="renderImportPreview()" style="flex:1;"></select>
+              <button class="btn btn-ink btn-sm" onclick="subirEmpleados()">📤 Subir a Firebase</button>
+            </div>
+            <div id="import-names" style="max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm);margin-top:8px;font-size:12px;"></div>
+          </div>
+          <div id="prog-sec" style="display:none;margin-top:10px;">
+            <div class="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+            <div class="prog-txt" id="prog-txt">Subiendo...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA SALIDAS -->
+    <div class="card">
+      <div class="ch">
+        <span class="ct">📋 Registros de Salidas</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="date" class="fsel" id="a-date" onchange="admLoad()" style="width:145px;" />
+          <button class="btn btn-og btn-xs" onclick="admLoad()">🔄</button>
+        </div>
+      </div>
+      <div class="tbar">
+        <div class="sbox">
+          <span class="sico2">🔍</span>
+          <input class="fi" id="a-q" placeholder="Buscar nombre o destino..." oninput="admFilter()" />
+        </div>
+        <select class="fsel" id="a-fs" onchange="admFilter()">
+          <option value="">Todos los estados</option>
+          <option value="out">Fuera</option>
+          <option value="back">Regresaron</option>
+          <option value="late">Con retraso</option>
+        </select>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Empleado</th><th>Destino</th><th>Salida</th><th>Regr.Est.</th><th>Regr.Real</th><th>Duración</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="adm-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Regreso Empleado -->
+<div class="overlay" id="m-er">
+  <div class="modal">
+    <div class="mh">✅ Registrar mi Regreso <button class="mx" onclick="cm('m-er')">✕</button></div>
+    <div class="mb">
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:1rem;">Empleado: <strong id="mer-n">—</strong></p>
+      <div class="fg"><label>Hora de regreso *</label><input class="fi" type="time" id="mer-h" /></div>
+      <div class="fg"><label>Observaciones</label><textarea class="fi" id="mer-o" placeholder="Opcional..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-og" onclick="cm('m-er')">Cancelar</button>
+      <button class="btn btn-green" onclick="empConfReg()">✅ Confirmar Regreso</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Regreso Admin -->
+<div class="overlay" id="m-ar">
+  <div class="modal">
+    <div class="mh">✅ Registrar Regreso <button class="mx" onclick="cm('m-ar')">✕</button></div>
+    <div class="mb">
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:1rem;">Empleado: <strong id="mar-n">—</strong></p>
+      <div class="fg"><label>Hora de regreso *</label><input class="fi" type="time" id="mar-h" /></div>
+      <div class="fg"><label>Observaciones</label><textarea class="fi" id="mar-o" placeholder="Opcional..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-og" onclick="cm('m-ar')">Cancelar</button>
+      <button class="btn btn-green" onclick="admConfReg()">✅ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<!-- ══ SCRIPTS: Firebase primero, luego lógica ══ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+
+// ══════════════════════════════════════════
+// 1. FIREBASE INIT
+// ══════════════════════════════════════════
+firebase.initializeApp({
+  apiKey:            "AIzaSyDUBG512xlh6QOABDFqNfes8mnmy0F_mLk",
+  authDomain:        "salidasempleados.firebaseapp.com",
+  projectId:         "salidasempleados",
+  storageBucket:     "salidasempleados.firebasestorage.app",
+  messagingSenderId: "78030015987",
+  appId:             "1:78030015987:web:2c8fb1f99d93031cc0d686"
+});
+const db = firebase.firestore();
+
+// ══════════════════════════════════════════
+// 2. CONSTANTES
+// ══════════════════════════════════════════
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'admin123';
+
+// ══════════════════════════════════════════
+// 3. ESTADO
+// ══════════════════════════════════════════
+let currentUser  = null;
+let editId       = null;
+let empleados    = [];
+let admRecs      = [];
+let empUnsub     = null;
+let admUnsub     = null;
+let parsedNames  = [];
+let fileRows     = [];
+let fileHeaders  = [];
+
+// ══════════════════════════════════════════
+// 4. RELOJ
+// ══════════════════════════════════════════
+function tick() {
+  const t = new Date().toLocaleTimeString('es-MX', {hour12:false});
+  ['clk-e','clk-a'].forEach(id => { const el = ge(id); if(el) el.textContent = t; });
+}
+setInterval(tick, 1000); tick();
+
+// Hora por defecto en formulario
+(function() {
+  const n = new Date(), p = h => String(h).padStart(2,'0');
+  ge('f-sal').value = `${p(n.getHours())}:${p(n.getMinutes())}`;
+  const l = new Date(n.getTime() + 3600000);
+  ge('f-reg').value = `${p(l.getHours())}:${p(l.getMinutes())}`;
+  ge('a-date').valueAsDate = new Date();
+})();
+
+// ══════════════════════════════════════════
+// 5. NAVEGACIÓN
+// ══════════════════════════════════════════
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  ge(id).classList.add('active');
+}
+
+function goLogin(role) {
+  const adm = role === 'adm';
+  ge('lava').textContent   = adm ? '🛡️' : '👤';
+  ge('lava').style.background = adm ? 'var(--purple-l)' : 'var(--blue-l)';
+  ge('ltitle').textContent = adm ? 'Administrador' : 'Acceso Empleado';
+  ge('lsub').textContent   = adm ? 'Ingresa tus credenciales' : 'Selecciona tu nombre de la lista';
+  ge('lf-emp').style.display = adm ? 'none' : 'block';
+  ge('lf-adm').style.display = adm ? 'block' : 'none';
+  ge('btn-enter').dataset.role = role;
+  show('sc-login');
+  if (!adm) loadEmpSelect();
+}
+
+function logout() {
+  if (empUnsub) { empUnsub(); empUnsub = null; }
+  if (admUnsub) { admUnsub(); admUnsub = null; }
+  currentUser = null;
+  ge('a-user').value = '';
+  ge('a-pass').value = '';
+  show('sc-land');
+}
+
+// ══════════════════════════════════════════
+// 6. CARGAR EMPLEADOS EN SELECT
+// ══════════════════════════════════════════
+async function loadEmpSelect() {
+  ge('l-load').style.display  = 'flex';
+  ge('emp-sel').style.display = 'none';
+  ge('ep-prev').style.display = 'none';
+  try {
+    const snap = await db.collection('empleados').orderBy('nombre').get();
+    empleados = snap.docs.map(d => ({id: d.id, ...d.data()}));
+  } catch(e) {
+    toast('err', '❌ Error cargando empleados: ' + e.message);
+  }
+  const sel = ge('emp-sel');
+  sel.innerHTML = '<option value="">-- Selecciona tu nombre --</option>';
+  empleados.forEach((emp, i) => {
+    const o = document.createElement('option');
+    o.value = i; o.textContent = emp.nombre; sel.appendChild(o);
+  });
+  ge('l-load').style.display  = 'none';
+  sel.style.display = 'block';
+}
+
+function onEmpSel() {
+  const idx = ge('emp-sel').value;
+  if (idx === '') { ge('ep-prev').style.display = 'none'; return; }
+  ge('ep-name').textContent   = empleados[parseInt(idx)].nombre;
+  ge('ep-prev').style.display = 'block';
+}
+
+// ══════════════════════════════════════════
+// 7. LOGIN
+// ══════════════════════════════════════════
+function doLogin() {
+  const role = ge('btn-enter').dataset.role;
+  if (role === 'adm') {
+    if (gv('a-user') !== ADMIN_USER || gv('a-pass') !== ADMIN_PASS) {
+      toast('err', '❌ Credenciales incorrectas'); return;
+    }
+    currentUser = {nombre: 'Administrador', role: 'adm'};
+    show('sc-adm');
+    admLoad();
+    setupAdmRT();
+  } else {
+    const idx = ge('emp-sel').value;
+    if (idx === '') { toast('err', '⚠️ Selecciona tu nombre'); return; }
+    currentUser = {...empleados[parseInt(idx)], role: 'emp'};
+    const nom = currentUser.nombre;
+    ge('tb-en').textContent  = nom;
+    ge('h-name').textContent = `Hola, ${nom.split(' ')[0]}! 👋`;
+    ge('h-sub').textContent  = 'Bienvenido al sistema de salidas';
+    ge('h-date').textContent = new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+    show('sc-emp');
+    empLoad();
+    setupEmpRT();
+  }
+}
+
+// ══════════════════════════════════════════
+// 8. EMPLEADO — SALIDAS (TIEMPO REAL)
+// ══════════════════════════════════════════
+function setupEmpRT() {
+  if (empUnsub) empUnsub();
+  empUnsub = db.collection('salidas')
+    .where('fecha',  '==', hoy())
+    .where('nombre', '==', currentUser.nombre)
+    .onSnapshot(snap => {
+      const recs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>b.ts-a.ts);
+      chkLate(recs);
+      empRender(recs);
+    });
+}
+
+function empLoad() {
+  db.collection('salidas')
+    .where('fecha',  '==', hoy())
+    .where('nombre', '==', currentUser.nombre)
+    .get()
+    .then(snap => {
+      const recs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>b.ts-a.ts);
+      chkLate(recs);
+      empRender(recs);
+    });
+}
+
+function empRender(recs) {
+  const active = recs.find(r => r.estado === 'out' || r.estado === 'late');
+  const aoEl = ge('ao'), fc = ge('fcard');
+  if (active) {
+    aoEl.style.display = 'block';
+    fc.style.opacity = '.4'; fc.style.pointerEvents = 'none';
+    ge('ao-lugar').textContent = active.lugar;
+    ge('ao-sal').textContent   = active.horaSalida;
+    ge('ao-reg').textContent   = active.horaRegresoEsperada || '—';
+    ge('mer-n').textContent    = active.nombre;
+    editId = active.id;
+  } else {
+    aoEl.style.display = 'none';
+    fc.style.opacity = '1'; fc.style.pointerEvents = 'auto';
+  }
+  const tb = ge('emp-tbody');
+  if (!recs.length) {
+    tb.innerHTML = `<tr><td colspan="6"><div class="empty">
+      <div class="empty-ico">📭</div><h3>Sin salidas hoy</h3>
+      <p>Registra tu primera salida del día</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = recs.map(r => `<tr>
+    <td style="font-weight:500;">${r.lugar}</td>
+    <td><span class="mono">${r.horaSalida}</span></td>
+    <td><span class="mono">${r.horaRegresoEsperada || '—'}</span></td>
+    <td><span class="mono">${r.horaRegresoReal || '—'}</span></td>
+    <td>${calcDur(r.horaSalida, r.horaRegresoReal) ? `<span class="dur">${calcDur(r.horaSalida, r.horaRegresoReal)}</span>` : '—'}</td>
+    <td>${mkBadge(r.estado)}</td>
+  </tr>`).join('');
+}
+
+async function empSalida() {
+  const lugar = gv('f-lugar'), sal = gv('f-sal');
+  if (!lugar) { toast('err', '⚠️ Ingresa el destino'); return; }
+  if (!sal)   { toast('err', '⚠️ Ingresa la hora de salida'); return; }
+  const rec = {
+    nombre: currentUser.nombre,
+    lugar, horaSalida: sal,
+    horaRegresoEsperada: gv('f-reg') || null,
+    horaRegresoReal: null,
+    motivo: gv('f-mot'),
+    estado: 'out',
+    fecha: hoy(),
+    ts: Date.now()
+  };
+  const btn = ge('btn-sal');
+  btn.innerHTML = '<span class="spin"></span> Guardando...'; btn.disabled = true;
+  try {
+    await db.collection('salidas').add(rec);
+    toast('ok', '✅ Salida registrada correctamente');
+    ge('f-lugar').value = ''; ge('f-mot').value = '';
+    const n = new Date(), p = h => String(h).padStart(2,'0');
+    ge('f-sal').value = `${p(n.getHours())}:${p(n.getMinutes())}`;
+  } catch(e) { toast('err', '❌ ' + e.message); }
+  btn.innerHTML = '🚀 Registrar mi salida'; btn.disabled = false;
+}
+
+function sp(p) { ge('f-lugar').value = p; }
+
+function openEmpReg() {
+  ge('mer-h').value = nowT(); ge('mer-o').value = '';
+  ge('m-er').classList.add('open');
+}
+
+async function empConfReg() {
+  const h = gv('mer-h'); if (!h) { toast('err', '⚠️ Ingresa la hora'); return; }
+  const upd = {horaRegresoReal: h, estado: 'back'};
+  const obs = gv('mer-o'); if (obs) upd.observaciones = obs;
+  try {
+    await db.collection('salidas').doc(editId).update(upd);
+    toast('ok', '✅ Regreso registrado');
+    cm('m-er');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+// ══════════════════════════════════════════
+// 9. ADMIN — SALIDAS (TIEMPO REAL)
+// ══════════════════════════════════════════
+function setupAdmRT() {
+  if (admUnsub) admUnsub();
+  admUnsub = db.collection('salidas')
+    .where('fecha', '==', hoy())
+    .onSnapshot(snap => {
+      admRecs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>b.ts-a.ts);
+      chkLate(admRecs);
+      admFilter();
+    });
+}
+
+function admLoad() {
+  const date = gv('a-date') || hoy();
+  db.collection('salidas')
+    .where('fecha', '==', date)
+    .get()
+    .then(snap => {
+      admRecs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>b.ts-a.ts);
+      chkLate(admRecs);
+      admFilter();
+    })
+    .catch(e => toast('err', '❌ ' + e.message));
+}
+
+function admFilter() {
+  const q  = gv('a-q').toLowerCase();
+  const st = gv('a-fs');
+  const f  = admRecs.filter(r =>
+    (!st || r.estado === st) &&
+    (!q  || r.nombre.toLowerCase().includes(q) || r.lugar.toLowerCase().includes(q))
+  );
+  ge('st-tot').textContent = admRecs.length;
+  ge('st-out').textContent = admRecs.filter(r => r.estado === 'out').length;
+  ge('st-bk').textContent  = admRecs.filter(r => r.estado === 'back').length;
+  ge('st-lt').textContent  = admRecs.filter(r => r.estado === 'late').length;
+
+  const tb = ge('adm-tbody');
+  if (!f.length) {
+    tb.innerHTML = `<tr><td colspan="8"><div class="empty">
+      <div class="empty-ico">📭</div><h3>Sin registros</h3>
+      <p>No hay datos para los filtros seleccionados</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = f.map(r => {
+    const d = calcDur(r.horaSalida, r.horaRegresoReal);
+    const acts = r.estado !== 'back'
+      ? `<button class="btn btn-green btn-xs" onclick="openAdmReg('${r.id}')">✅ Regreso</button>
+         <button class="btn btn-red btn-xs" onclick="admDel('${r.id}')">🗑</button>`
+      : `<button class="btn btn-og btn-xs" onclick="admDel('${r.id}')">🗑</button>`;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;">
+        <div class="ava">${ini(r.nombre)}</div>
+        <span style="font-weight:600;">${r.nombre}</span>
+      </div></td>
+      <td>
+        <div style="font-weight:500;">${r.lugar}</div>
+        ${r.motivo ? `<div style="font-size:11px;color:var(--ink3);">${r.motivo}</div>` : ''}
+      </td>
+      <td><span class="mono">${r.horaSalida}</span></td>
+      <td><span class="mono">${r.horaRegresoEsperada || '—'}</span></td>
+      <td><span class="mono">${r.horaRegresoReal || '—'}</span></td>
+      <td>${d ? `<span class="dur">${d}</span>` : '—'}</td>
+      <td>${mkBadge(r.estado)}</td>
+      <td><div style="display:flex;gap:5px;">${acts}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function openAdmReg(id) {
+  const r = admRecs.find(x => x.id === id); if (!r) return;
+  editId = id;
+  ge('mar-n').textContent = r.nombre;
+  ge('mar-h').value = nowT(); ge('mar-o').value = '';
+  ge('m-ar').classList.add('open');
+}
+
+async function admConfReg() {
+  const h = gv('mar-h'); if (!h) { toast('err', '⚠️ Hora requerida'); return; }
+  const upd = {horaRegresoReal: h, estado: 'back'};
+  const obs = gv('mar-o'); if (obs) upd.observaciones = obs;
+  try {
+    await db.collection('salidas').doc(editId).update(upd);
+    toast('ok', '✅ Regreso registrado'); cm('m-ar');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+async function admDel(id) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  try {
+    await db.collection('salidas').doc(id).delete();
+    toast('inf', '🗑 Registro eliminado');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+function admCSV() {
+  if (!admRecs.length) { toast('inf', 'Sin datos'); return; }
+  const h = ['Nombre','Destino','Motivo','Salida','Regr.Est.','Regr.Real','Duración','Estado','Fecha'];
+  const rows = admRecs.map(r => [
+    r.nombre, r.lugar, r.motivo||'', r.horaSalida,
+    r.horaRegresoEsperada||'', r.horaRegresoReal||'',
+    calcDur(r.horaSalida, r.horaRegresoReal)||'',
+    {out:'Fuera',back:'Regresó',late:'Tarde'}[r.estado],
+    r.fecha
+  ]);
+  const csv = [h,...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
+  a.download = `salidas_${gv('a-date')||hoy()}.csv`; a.click();
+  toast('ok', '⬇ CSV descargado');
+}
+
+// ══════════════════════════════════════════
+// 10. ADMIN — GESTIONAR EMPLEADOS
+// ══════════════════════════════════════════
+function toggleEmpPanel() {
+  const p = ge('emp-panel');
+  if (p.style.display === 'none') {
+    p.style.display = 'block';
+    admLoadEmpleados();
+  } else {
+    p.style.display = 'none';
+  }
+}
+
+async function admLoadEmpleados() {
+  try {
+    const snap = await db.collection('empleados').orderBy('nombre').get();
+    empleados = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    renderEmpList();
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+function renderEmpList() {
+  const q    = (ge('emp-search').value || '').toLowerCase();
+  const list = ge('emp-list');
+  const filt = empleados.filter(e => !q || e.nombre.toLowerCase().includes(q));
+  ge('emp-count').textContent = empleados.length;
+  if (!filt.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-ico">👥</div>
+      <h3>${empleados.length ? 'Sin resultados' : 'Sin empleados'}</h3>
+      <p>${empleados.length ? 'Cambia el filtro' : 'Agrega empleados arriba o importa tu Excel'}</p></div>`;
+    return;
+  }
+  list.innerHTML = filt.map(e => `
+    <div class="emp-item">
+      <div style="display:flex;align-items:center;gap:9px;">
+        <div class="ava" style="width:28px;height:28px;font-size:10px;">${ini(e.nombre)}</div>
+        <span style="font-size:13px;font-weight:500;">${e.nombre}</span>
+      </div>
+      <button class="btn btn-red btn-xs" onclick="admDelEmp('${e.id}')">🗑</button>
+    </div>`).join('');
+}
+
+async function admAddEmp() {
+  const nombre = ge('new-emp').value.trim();
+  if (!nombre) { toast('err', '⚠️ Escribe el nombre'); return; }
+  try {
+    const ref = await db.collection('empleados').add({nombre, activo:true, creadoEn:Date.now()});
+    empleados.push({id: ref.id, nombre, activo:true});
+    empleados.sort((a,b) => a.nombre.localeCompare(b.nombre));
+    renderEmpList();
+    ge('new-emp').value = '';
+    toast('ok', '✅ Empleado agregado: ' + nombre);
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+async function admDelEmp(id) {
+  if (!confirm('¿Eliminar este empleado?')) return;
+  try {
+    await db.collection('empleados').doc(id).delete();
+    empleados = empleados.filter(e => e.id !== id);
+    renderEmpList();
+    toast('inf', '🗑 Empleado eliminado');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+// ══════════════════════════════════════════
+// 11. IMPORTAR EXCEL / CSV
+// ══════════════════════════════════════════
+function onDrop(e) { e.preventDefault(); ge('dropz').classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) onFile(f); }
+
+function onFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  if (ext === 'csv') { reader.onload = e => parseCSV(e.target.result); reader.readAsText(file,'UTF-8'); }
+  else { reader.onload = e => parseXLSX(e.target.result); reader.readAsArrayBuffer(file); }
+}
+
+function parseCSV(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  fileHeaders = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
+  fileRows = lines.slice(1).map(l => {
+    const vals = l.match(/(".*?"|[^,]+)/g) || [];
+    const obj = {}; fileHeaders.forEach((h,i) => { obj[h] = (vals[i]||'').replace(/"/g,'').trim(); });
+    return obj;
+  }).filter(r => Object.values(r).some(v => v));
+  buildColPicker();
+}
+
+function parseXLSX(buf) {
+  const wb = XLSX.read(buf, {type:'array'});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const data = XLSX.utils.sheet_to_json(ws, {header:1});
+  fileHeaders = data[0].map(h => String(h||'').trim());
+  fileRows = data.slice(1).map(row => {
+    const obj = {}; fileHeaders.forEach((h,i) => { obj[h] = String(row[i]||'').trim(); });
+    return obj;
+  }).filter(r => Object.values(r).some(v => v));
+  buildColPicker();
+}
+
+function buildColPicker() {
+  const sel = ge('col-sel');
+  sel.innerHTML = '';
+  fileHeaders.forEach(h => { const o=document.createElement('option'); o.value=h; o.textContent=h; sel.appendChild(o); });
+  const auto = fileHeaders.find(h => /nombre|name|empleado|trabajador/i.test(h));
+  if (auto) sel.value = auto;
+  ge('import-sec').style.display = 'block';
+  renderImportPreview();
+}
+
+function renderImportPreview() {
+  const col = ge('col-sel').value || fileHeaders[0];
+  parsedNames = fileRows.map(r => (r[col]||'').trim()).filter(n => n && n.length > 1);
+  ge('import-count').textContent = parsedNames.length;
+  ge('import-names').innerHTML = parsedNames.slice(0,6).map(n =>
+    `<div style="padding:5px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+      <div class="ava" style="width:22px;height:22px;font-size:9px;">${ini(n)}</div>
+      <span>${n}</span>
+    </div>`).join('') + (parsedNames.length > 6 ? `<div style="padding:5px 10px;font-size:11px;color:var(--ink3);">... y ${parsedNames.length-6} más</div>` : '');
+}
+
+async function subirEmpleados() {
+  if (!parsedNames.length) { toast('err', 'Sin nombres para subir'); return; }
+  ge('prog-sec').style.display = 'block';
+  ge('import-sec').style.display = 'none';
+  const total = parsedNames.length, BSIZ = 450; let done = 0;
+  try {
+    for (let i = 0; i < total; i += BSIZ) {
+      const batch = db.batch();
+      parsedNames.slice(i, i+BSIZ).forEach(nombre => {
+        batch.set(db.collection('empleados').doc(), {nombre, activo:true, creadoEn:Date.now()});
+      });
+      await batch.commit();
+      done = Math.min(i+BSIZ, total);
+      const pct = Math.round((done/total)*100);
+      ge('prog-bar').style.width = pct+'%';
+      ge('prog-txt').textContent = `${done} / ${total} empleados subidos (${pct}%)`;
+    }
+    toast('ok', `✅ ${total} empleados subidos correctamente`);
+    ge('prog-sec').style.display = 'none';
+    ge('finput').value = '';
+    fileRows = []; parsedNames = [];
+    admLoadEmpleados();
+  } catch(e) {
+    toast('err', '❌ ' + e.message);
+    ge('prog-sec').style.display = 'none';
+    ge('import-sec').style.display = 'block';
+  }
+}
+
+// ══════════════════════════════════════════
+// 12. MODALES
+// ══════════════════════════════════════════
+function cm(id) { ge(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ══════════════════════════════════════════
+// 13. HELPERS
+// ══════════════════════════════════════════
+function ge(id)       { return document.getElementById(id); }
+function gv(id)       { return (ge(id).value || '').trim(); }
+function hoy()        { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function nowT()       { const n=new Date(); return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; }
+function ini(n)       { return (n||'').split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase(); }
+function calcDur(s,r) {
+  if (!s||!r) return null;
+  const [h1,m1]=s.split(':').map(Number), [h2,m2]=r.split(':').map(Number);
+  let m = (h2*60+m2)-(h1*60+m1); if (m<0) m+=1440;
+  return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`;
+}
+function chkLate(recs) {
+  const cur = nowT();
+  recs.forEach(r => { if (r.estado==='out' && r.horaRegresoEsperada && r.horaRegresoEsperada < cur) r.estado = 'late'; });
+}
+function mkBadge(e) {
+  const m = {out:['b-out','Fuera'], back:['b-back','Regresó'], late:['b-late','Tarde']};
+  const [c,l] = m[e] || m['out'];
+  return `<span class="badge ${c}">${l}</span>`;
+}
+function toast(type, msg) {
+  const c = ge('toasts'), t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${{ok:'✅',err:'❌',inf:'ℹ️'}[type]}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.transition='all .3s'; t.style.opacity='0'; t.style.transform='translateX(50px)'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+// Auto-check retrasos cada minuto
+setInterval(() => { chkLate(admRecs); if (ge('sc-adm').classList.contains('active')) admFilter(); }, 60000);
+
+</script>
+</body>
+</html>
