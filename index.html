@@ -140,8 +140,8 @@ tbody tr:hover td{background:var(--paper2);}
 .ao-row{display:flex;gap:1.25rem;flex-wrap:wrap;margin-bottom:.75rem;}
 .ao-i{font-size:12px;color:var(--amber);}
 .ao-i strong{font-weight:700;}
-.egrid{display:grid;grid-template-columns:350px 1fr;gap:1.25rem;align-items:start;}
-@media(max-width:700px){.egrid{grid-template-columns:1fr;}}
+.egrid2{display:grid;grid-template-columns:350px 1fr;gap:1.25rem;align-items:start;}
+@media(max-width:700px){.egrid2{grid-template-columns:1fr;}}
 
 /* ── ADMIN STATS ── */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem;}
@@ -194,6 +194,19 @@ tbody tr:hover td{background:var(--paper2);}
 /* ── SPIN ── */
 .spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:rot .6s linear infinite;display:inline-block;}
 .spin-d{border-color:rgba(0,0,0,.1);border-top-color:var(--ink3);}
+
+/* ── PERMISOS ── */
+.b-pend{background:#fff7ed;color:#9a3412;}.b-pend::before{background:#f97316;}
+.b-aprov{background:var(--green-l);color:#14532d;}.b-aprov::before{background:var(--green);}
+.b-rech{background:var(--red-l);color:#7f1d1d;}.b-rech::before{background:var(--red);}
+.perm-cnt{background:#f97316;color:white;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:5px;vertical-align:middle;}
+
+/* ── ADMIN TABS ── */
+.adm-tabs{display:flex;gap:4px;margin-bottom:1.25rem;background:var(--paper);border:1px solid var(--border);border-radius:var(--r);padding:5px;box-shadow:var(--sh);}
+.atab{flex:1;padding:10px;border:none;border-radius:var(--r-sm);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;background:none;color:var(--ink3);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.atab:hover{background:var(--paper2);color:var(--ink2);}
+.atab.active{background:var(--blue);color:white;box-shadow:0 2px 8px rgba(29,78,216,.25);}
+@media(max-width:600px){.atab{font-size:11px;padding:8px 4px;}}
 </style>
 </head>
 <body>
@@ -285,43 +298,88 @@ tbody tr:hover td{background:var(--paper2);}
       <button class="btn btn-green btn-sm" onclick="openEmpReg()">✅ Registrar mi regreso</button>
     </div>
 
-    <div class="egrid">
-      <!-- Formulario salida -->
-      <div class="card" id="fcard">
-        <div class="ch"><span class="ct">🚀 Registrar Salida</span></div>
-        <div class="cb">
-          <div class="fg">
-            <label>Destino *</label>
-            <div class="chips">
-              <span class="chip" onclick="sp('Banco')">🏦 Banco</span>
-              <span class="chip" onclick="sp('Cliente')">🤝 Cliente</span>
-              <span class="chip" onclick="sp('Médico')">🏥 Médico</span>
-              <span class="chip" onclick="sp('Trámite Gov.')">🏛️ Trámite</span>
-              <span class="chip" onclick="sp('Almacén')">📦 Almacén</span>
-              <span class="chip" onclick="sp('Comida')">🍽️ Comida</span>
-            </div>
-            <input class="fi" id="f-lugar" placeholder="O escribe el destino..." />
-          </div>
-          <div class="fr">
-            <div class="fg"><label>Hora salida *</label><input class="fi" type="time" id="f-sal" /></div>
-            <div class="fg"><label>Regreso esperado</label><input class="fi" type="time" id="f-reg" /></div>
-          </div>
-          <div class="fg"><label>Motivo (opcional)</label><textarea class="fi" id="f-mot" placeholder="Breve descripción..."></textarea></div>
-          <button class="btn btn-blue btn-full" id="btn-sal" onclick="empSalida()">🚀 Registrar mi salida</button>
-        </div>
-      </div>
+    <!-- EMPLOYEE TABS -->
+    <div class="adm-tabs" style="margin-top:1.25rem;">
+      <button class="atab active" data-tab="sal" onclick="empTab('sal')">🚀 Salidas del Día</button>
+      <button class="atab" data-tab="perm" onclick="empTab('perm')">📅 Permisos</button>
+    </div>
 
-      <!-- Mis registros hoy -->
-      <div class="card">
-        <div class="ch"><span class="ct">📋 Mis salidas de hoy</span></div>
-        <div class="tw">
-          <table>
-            <thead><tr><th>Destino</th><th>Salida</th><th>Regr.Est.</th><th>Regr.Real</th><th>Duración</th><th>Estado</th></tr></thead>
-            <tbody id="emp-tbody"></tbody>
-          </table>
+    <!-- TAB: Salidas -->
+    <div id="emp-sec-sal">
+      <div class="egrid2">
+        <!-- Formulario salida -->
+        <div class="card" id="fcard">
+          <div class="ch"><span class="ct">🚀 Registrar Salida</span></div>
+          <div class="cb">
+            <div class="fg">
+              <label>Destino *</label>
+              <div class="chips">
+                <span class="chip" onclick="sp('Banco')">🏦 Banco</span>
+                <span class="chip" onclick="sp('Cliente')">🤝 Cliente</span>
+                <span class="chip" onclick="sp('Médico')">🏥 Médico</span>
+                <span class="chip" onclick="sp('Trámite Gov.')">🏛️ Trámite</span>
+                <span class="chip" onclick="sp('Almacén')">📦 Almacén</span>
+                <span class="chip" onclick="sp('Comida')">🍽️ Comida</span>
+              </div>
+              <input class="fi" id="f-lugar" placeholder="O escribe el destino..." />
+            </div>
+            <div class="fr">
+              <div class="fg"><label>Hora salida *</label><input class="fi" type="time" id="f-sal" /></div>
+              <div class="fg"><label>Regreso esperado</label><input class="fi" type="time" id="f-reg" /></div>
+            </div>
+            <div class="fg"><label>Motivo (opcional)</label><textarea class="fi" id="f-mot" placeholder="Breve descripción..."></textarea></div>
+            <button class="btn btn-blue btn-full" id="btn-sal" onclick="empSalida()">🚀 Registrar mi salida</button>
+          </div>
+        </div>
+
+        <!-- Mis registros hoy -->
+        <div class="card">
+          <div class="ch"><span class="ct">📋 Mis salidas de hoy</span></div>
+          <div class="tw">
+            <table>
+              <thead><tr><th>Destino</th><th>Salida</th><th>Regr.Est.</th><th>Regr.Real</th><th>Duración</th><th>Estado</th></tr></thead>
+              <tbody id="emp-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- TAB: Permisos -->
+    <div id="emp-sec-perm" style="display:none;">
+      <div class="egrid2">
+        <!-- Formulario Permisos -->
+        <div class="card" id="perm-card">
+        <div class="ch"><span class="ct">📅 Permisos de Días</span></div>
+        <div class="cb">
+          <div class="fg">
+            <label>Motivo del Permiso *</label>
+            <div class="chips">
+              <span class="chip" onclick="sp2('Cita médica')">🏥 Médico</span>
+              <span class="chip" onclick="sp2('Asunto personal')">👤 Personal</span>
+              <span class="chip" onclick="sp2('Trámite legal')">⚖️ Legal</span>
+              <span class="chip" onclick="sp2('Asunto familiar')">👨‍👩‍👧 Familiar</span>
+              <span class="chip" onclick="sp2('Estudio/Académico')">🎓 Académico</span>
+            </div>
+            <textarea class="fi" id="p-mot" placeholder="O describe el motivo..."></textarea>
+          </div>
+          <div class="fg"><label>Fecha de Ausencia *</label><input class="fi" type="date" id="p-fecha" /></div>
+          <button class="btn btn-blue btn-full" id="btn-perm" onclick="empPermiso()">📅 Solicitar Permiso</button>
+        </div>
+      </div>
+
+        <!-- Mis Permisos Solicitados -->
+        <div class="card">
+          <div class="ch"><span class="ct">📋 Mis Permisos Solicitados</span></div>
+          <div class="tw">
+            <table>
+              <thead><tr><th>Fecha Ausencia</th><th>Motivo</th><th>Enviado</th><th>Estado</th><th>Respuesta Admin</th></tr></thead>
+              <tbody id="perm-emp-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /emp-sec-perm -->
   </div>
 </div>
 
@@ -340,6 +398,15 @@ tbody tr:hover td{background:var(--paper2);}
     </div>
   </div>
   <div class="wrap">
+
+    <!-- TABS -->
+    <div class="adm-tabs">
+      <button class="atab active" data-tab="hoy" onclick="admTab('hoy')">📋 Registros de Hoy</button>
+      <button class="atab" data-tab="hist-sal" onclick="admTab('hist-sal')">📅 Historial de Salidas</button>
+      <button class="atab" data-tab="hist-perm" onclick="admTab('hist-perm')">🗂 Historial de Permisos<span class="perm-cnt" id="perm-badge" style="display:none;">0</span></button>
+    </div>
+
+    <div id="adm-hoy">
 
     <!-- STATS -->
     <div class="stats">
@@ -430,6 +497,89 @@ tbody tr:hover td{background:var(--paper2);}
       </div>
     </div>
 
+    <!-- PANEL PERMISOS -->
+    <div class="card" id="perm-panel" style="display:none;margin-top:1.25rem;">
+      <div class="ch">
+        <span class="ct">📅 Permisos de Días</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select class="fsel" id="perm-filter" onchange="admPermFilter()">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendientes</option>
+            <option value="aprobado">Aprobados</option>
+            <option value="rechazado">Rechazados</option>
+          </select>
+          <button class="btn btn-og btn-xs" onclick="togglePermPanel()">✕ Cerrar</button>
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Empleado</th><th>Fecha Ausencia</th><th>Motivo</th><th>Solicitado</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="perm-adm-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    </div><!-- /adm-hoy -->
+
+    <!-- HISTORIAL SALIDAS -->
+    <div id="adm-hist-sal" style="display:none;">
+      <div class="card">
+        <div class="ch">
+          <span class="ct">📅 Historial de Salidas</span>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <label style="font-size:12px;color:var(--ink3);">Desde</label>
+            <input type="date" class="fsel" id="hs-desde" style="width:140px;" />
+            <label style="font-size:12px;color:var(--ink3);">Hasta</label>
+            <input type="date" class="fsel" id="hs-hasta" style="width:140px;" />
+            <button class="btn btn-blue btn-xs" onclick="admLoadHistSal()">🔍 Buscar</button>
+            <button class="btn btn-og btn-xs" onclick="histSalCSV()">⬇ CSV</button>
+          </div>
+        </div>
+        <div class="tbar">
+          <div class="sbox">
+            <span class="sico2">🔍</span>
+            <input class="fi" id="hs-q" placeholder="Buscar nombre o destino..." oninput="histSalFilter()" />
+          </div>
+          <select class="fsel" id="hs-fs" onchange="histSalFilter()">
+            <option value="">Todos los estados</option>
+            <option value="out">Fuera</option>
+            <option value="back">Regresaron</option>
+            <option value="late">Con retraso</option>
+          </select>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Empleado</th><th>Fecha</th><th>Destino</th><th>Motivo</th><th>Salida</th><th>Regr.Real</th><th>Duración</th><th>Estado</th></tr></thead>
+            <tbody id="hist-sal-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL PERMISOS -->
+    <div id="adm-hist-perm" style="display:none;">
+      <div class="card">
+        <div class="ch">
+          <span class="ct">🗂 Historial de Permisos</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select class="fsel" id="hp-filter" onchange="histPermFilter()">
+              <option value="">Todos los estados</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="aprobado">Aprobados</option>
+              <option value="rechazado">Rechazados</option>
+            </select>
+            <button class="btn btn-og btn-xs" onclick="admLoadHistPerm()">🔄</button>
+          </div>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Empleado</th><th>Fecha Ausencia</th><th>Motivo</th><th>Solicitado</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="hist-perm-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -504,6 +654,11 @@ let admUnsub     = null;
 let parsedNames  = [];
 let fileRows     = [];
 let fileHeaders  = [];
+let permRecs     = [];
+let permUnsub    = null;
+let histSalAll   = [];
+let histSalRecs  = [];
+let histPermRecs = [];
 
 // ══════════════════════════════════════════
 // 4. RELOJ
@@ -521,6 +676,9 @@ setInterval(tick, 1000); tick();
   const l = new Date(n.getTime() + 3600000);
   ge('f-reg').value = `${p(l.getHours())}:${p(l.getMinutes())}`;
   ge('a-date').valueAsDate = new Date();
+  const y = n.getFullYear(), mo = String(n.getMonth()+1).padStart(2,'0');
+  ge('hs-desde').value = `${y}-${mo}-01`;
+  ge('hs-hasta').valueAsDate = new Date();
 })();
 
 // ══════════════════════════════════════════
@@ -547,6 +705,7 @@ function goLogin(role) {
 function logout() {
   if (empUnsub) { empUnsub(); empUnsub = null; }
   if (admUnsub) { admUnsub(); admUnsub = null; }
+  if (permUnsub) { permUnsub(); permUnsub = null; }
   currentUser = null;
   ge('a-user').value = '';
   ge('a-pass').value = '';
@@ -596,6 +755,7 @@ function doLogin() {
     show('sc-adm');
     admLoad();
     setupAdmRT();
+    setupAdmPermRT();
   } else {
     const idx = ge('emp-sel').value;
     if (idx === '') { toast('err', '⚠️ Selecciona tu nombre'); return; }
@@ -608,6 +768,8 @@ function doLogin() {
     show('sc-emp');
     empLoad();
     setupEmpRT();
+    setupEmpPermRT();
+    ge('p-fecha').valueAsDate = new Date();
   }
 }
 
@@ -1018,8 +1180,331 @@ function toast(type, msg) {
   setTimeout(() => { t.style.transition='all .3s'; t.style.opacity='0'; t.style.transform='translateX(50px)'; setTimeout(() => t.remove(), 300); }, 3500);
 }
 
+// ══════════════════════════════════════════
+// 15. TABS EMPLEADO
+// ══════════════════════════════════════════
+function empTab(tab) {
+  ['sal','perm'].forEach(t => {
+    ge('emp-sec-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('#sc-emp .atab').forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tab);
+  });
+}
+
+// ══════════════════════════════════════════
+// 16. TABS ADMIN
+// ══════════════════════════════════════════
+function admTab(tab) {
+  ['hoy','hist-sal','hist-perm'].forEach(t => {
+    ge('adm-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('#sc-adm .atab').forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tab);
+  });
+  if (tab === 'hist-sal') admLoadHistSal();
+  if (tab === 'hist-perm') admLoadHistPerm();
+}
+
+// ── Historial Salidas ──
+async function admLoadHistSal() {
+  const desde = ge('hs-desde').value;
+  const hasta = ge('hs-hasta').value;
+  if (!desde || !hasta) { toast('err', '⚠️ Selecciona el rango de fechas'); return; }
+  const tb = ge('hist-sal-tbody');
+  tb.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--ink3);"><div class="spin spin-d" style="margin:0 auto;"></div></td></tr>`;
+  try {
+    const snap = await db.collection('salidas')
+      .where('fecha', '>=', desde)
+      .where('fecha', '<=', hasta)
+      .get();
+    histSalAll = snap.docs.map(d => ({id: d.id, ...d.data()}))
+      .sort((a,b) => b.fecha.localeCompare(a.fecha) || b.ts - a.ts);
+    chkLate(histSalAll);
+    histSalFilter();
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+function histSalFilter() {
+  const q  = (ge('hs-q').value || '').toLowerCase().trim();
+  const st = ge('hs-fs').value || '';
+  histSalRecs = histSalAll.filter(r =>
+    (!st || r.estado === st) &&
+    (!q  || r.nombre.toLowerCase().includes(q) || r.lugar.toLowerCase().includes(q))
+  );
+  const tb = ge('hist-sal-tbody');
+  if (!histSalRecs.length) {
+    tb.innerHTML = `<tr><td colspan="8"><div class="empty">
+      <div class="empty-ico">📋</div><h3>Sin registros</h3>
+      <p>No hay datos para los filtros seleccionados</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = histSalRecs.map(r => {
+    const d = calcDur(r.horaSalida, r.horaRegresoReal);
+    return `<tr>
+      <td><div style="display:flex;align-items:center;">
+        <div class="ava">${ini(r.nombre)}</div>
+        <span style="font-weight:600;">${r.nombre}</span>
+      </div></td>
+      <td><span class="mono">${r.fecha}</span></td>
+      <td style="font-weight:500;">${r.lugar}</td>
+      <td style="font-size:12px;color:var(--ink3);">${r.motivo || '—'}</td>
+      <td><span class="mono">${r.horaSalida}</span></td>
+      <td><span class="mono">${r.horaRegresoReal || '—'}</span></td>
+      <td>${d ? `<span class="dur">${d}</span>` : '—'}</td>
+      <td>${mkBadge(r.estado)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function histSalCSV() {
+  if (!histSalRecs.length) { toast('inf', 'Sin datos para exportar'); return; }
+  const h = ['Empleado','Fecha','Destino','Motivo','Salida','Regr.Real','Duración','Estado'];
+  const rows = histSalRecs.map(r => [
+    r.nombre, r.fecha, r.lugar, r.motivo || '',
+    r.horaSalida, r.horaRegresoReal || '',
+    calcDur(r.horaSalida, r.horaRegresoReal) || '',
+    {out:'Fuera', back:'Regresó', late:'Tarde'}[r.estado]
+  ]);
+  const csv = [h, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8'}));
+  a.download = `historial_salidas_${ge('hs-desde').value}_${ge('hs-hasta').value}.csv`;
+  a.click();
+  toast('ok', '⬇ CSV descargado');
+}
+
+// ── Historial Permisos ──
+async function admLoadHistPerm() {
+  const tb = ge('hist-perm-tbody');
+  tb.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--ink3);"><div class="spin spin-d" style="margin:0 auto;"></div></td></tr>`;
+  try {
+    const snap = await db.collection('permisos').get();
+    histPermRecs = snap.docs.map(d => ({id: d.id, ...d.data()}))
+      .sort((a,b) => b.ts - a.ts);
+    histPermFilter();
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+function histPermFilter() {
+  const st = (ge('hp-filter').value || '').trim();
+  const f  = st ? histPermRecs.filter(r => r.estado === st) : histPermRecs;
+  const tb = ge('hist-perm-tbody');
+  if (!f.length) {
+    tb.innerHTML = `<tr><td colspan="6"><div class="empty">
+      <div class="empty-ico">📅</div><h3>Sin permisos</h3>
+      <p>No hay solicitudes para el filtro seleccionado</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = f.map(r => {
+    const acts = r.estado === 'pendiente'
+      ? `<button class="btn btn-green btn-xs" onclick="histPermAprobar('${r.id}')">✅ Aprobar</button>
+         <button class="btn btn-red btn-xs" onclick="histPermRechazar('${r.id}')">✗ Rechazar</button>`
+      : `<button class="btn btn-og btn-xs" onclick="histPermDel('${r.id}')">🗑</button>`;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;">
+        <div class="ava">${ini(r.nombre)}</div>
+        <span style="font-weight:600;">${r.nombre}</span>
+      </div></td>
+      <td><span class="mono">${r.fechaAusencia}</span></td>
+      <td style="font-weight:500;">${r.motivo}</td>
+      <td><span class="mono" style="font-size:11px;">${new Date(r.ts).toLocaleDateString('es-MX')}</span></td>
+      <td>${mkPermBadge(r.estado)}</td>
+      <td><div style="display:flex;gap:5px;">${acts}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+async function histPermAprobar(id) {
+  const resp = 'Permiso aprobado por el administrador';
+  try {
+    await db.collection('permisos').doc(id).update({estado: 'aprobado', respuesta: resp});
+    [histPermRecs, permRecs].forEach(arr => {
+      const r = arr.find(x => x.id === id);
+      if (r) { r.estado = 'aprobado'; r.respuesta = resp; }
+    });
+    histPermFilter();
+    toast('ok', '✅ Permiso aprobado');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+async function histPermRechazar(id) {
+  const resp = prompt('Motivo del rechazo (opcional):') || 'Permiso rechazado';
+  try {
+    await db.collection('permisos').doc(id).update({estado: 'rechazado', respuesta: resp});
+    [histPermRecs, permRecs].forEach(arr => {
+      const r = arr.find(x => x.id === id);
+      if (r) { r.estado = 'rechazado'; r.respuesta = resp; }
+    });
+    histPermFilter();
+    toast('inf', 'Permiso rechazado');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+async function histPermDel(id) {
+  if (!confirm('¿Eliminar esta solicitud?')) return;
+  try {
+    await db.collection('permisos').doc(id).delete();
+    histPermRecs = histPermRecs.filter(r => r.id !== id);
+    permRecs = permRecs.filter(r => r.id !== id);
+    histPermFilter();
+    toast('inf', '🗑 Solicitud eliminada');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
 // Auto-check retrasos cada minuto
 setInterval(() => { chkLate(admRecs); if (ge('sc-adm').classList.contains('active')) admFilter(); }, 60000);
+
+// ══════════════════════════════════════════
+// 14. PERMISOS DE DÍAS
+// ══════════════════════════════════════════
+function sp2(v) { ge('p-mot').value = v; }
+
+// ── Empleado ──
+function setupEmpPermRT() {
+  if (permUnsub) permUnsub();
+  permUnsub = db.collection('permisos')
+    .where('nombre', '==', currentUser.nombre)
+    .onSnapshot(snap => {
+      const recs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => b.ts - a.ts);
+      renderEmpPermisos(recs);
+    });
+}
+
+function renderEmpPermisos(recs) {
+  const tb = ge('perm-emp-tbody');
+  if (!recs.length) {
+    tb.innerHTML = `<tr><td colspan="5"><div class="empty">
+      <div class="empty-ico">📅</div><h3>Sin permisos solicitados</h3>
+      <p>Usa el formulario de arriba para solicitar un permiso</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = recs.map(r => `<tr>
+    <td><span class="mono">${r.fechaAusencia}</span></td>
+    <td style="font-weight:500;">${r.motivo}</td>
+    <td><span class="mono" style="font-size:11px;">${new Date(r.ts).toLocaleDateString('es-MX')}</span></td>
+    <td>${mkPermBadge(r.estado)}</td>
+    <td style="font-size:12px;color:var(--ink3);">${r.respuesta || '—'}</td>
+  </tr>`).join('');
+}
+
+async function empPermiso() {
+  const fecha = gv('p-fecha'), motivo = gv('p-mot');
+  if (!fecha)  { toast('err', '⚠️ Selecciona la fecha de ausencia'); return; }
+  if (!motivo) { toast('err', '⚠️ Ingresa el motivo del permiso'); return; }
+  const btn = ge('btn-perm');
+  btn.innerHTML = '<span class="spin"></span> Enviando...'; btn.disabled = true;
+  try {
+    await db.collection('permisos').add({
+      nombre: currentUser.nombre,
+      fechaAusencia: fecha,
+      motivo,
+      estado: 'pendiente',
+      respuesta: null,
+      ts: Date.now()
+    });
+    toast('ok', '✅ Solicitud de permiso enviada');
+    ge('p-mot').value = '';
+  } catch(e) { toast('err', '❌ ' + e.message); }
+  btn.innerHTML = '📅 Solicitar Permiso'; btn.disabled = false;
+}
+
+// ── Admin ──
+function setupAdmPermRT() {
+  db.collection('permisos')
+    .where('estado', '==', 'pendiente')
+    .onSnapshot(snap => {
+      const badge = ge('perm-badge');
+      const cnt = snap.docs.length;
+      badge.textContent = cnt;
+      badge.style.display = cnt > 0 ? 'inline' : 'none';
+    });
+}
+
+function togglePermPanel() {
+  const p = ge('perm-panel');
+  if (p.style.display === 'none') {
+    p.style.display = 'block';
+    admLoadPermisos();
+  } else {
+    p.style.display = 'none';
+  }
+}
+
+async function admLoadPermisos() {
+  try {
+    const snap = await db.collection('permisos').get();
+    permRecs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => b.ts - a.ts);
+    admPermFilter();
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+function admPermFilter() {
+  const st = (ge('perm-filter').value || '').trim();
+  const f = st ? permRecs.filter(r => r.estado === st) : permRecs;
+  const tb = ge('perm-adm-tbody');
+  if (!f.length) {
+    tb.innerHTML = `<tr><td colspan="6"><div class="empty">
+      <div class="empty-ico">📅</div><h3>Sin permisos</h3>
+      <p>No hay solicitudes para el filtro seleccionado</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = f.map(r => {
+    const acts = r.estado === 'pendiente'
+      ? `<button class="btn btn-green btn-xs" onclick="admAprobar('${r.id}')">✅ Aprobar</button>
+         <button class="btn btn-red btn-xs" onclick="admRechazar('${r.id}')">✗ Rechazar</button>`
+      : `<button class="btn btn-og btn-xs" onclick="admDelPerm('${r.id}')">🗑</button>`;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;">
+        <div class="ava">${ini(r.nombre)}</div>
+        <span style="font-weight:600;">${r.nombre}</span>
+      </div></td>
+      <td><span class="mono">${r.fechaAusencia}</span></td>
+      <td style="font-weight:500;">${r.motivo}</td>
+      <td><span class="mono" style="font-size:11px;">${new Date(r.ts).toLocaleDateString('es-MX')}</span></td>
+      <td>${mkPermBadge(r.estado)}</td>
+      <td><div style="display:flex;gap:5px;">${acts}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+async function admAprobar(id) {
+  const resp = 'Permiso aprobado por el administrador';
+  try {
+    await db.collection('permisos').doc(id).update({estado: 'aprobado', respuesta: resp});
+    const rec = permRecs.find(r => r.id === id);
+    if (rec) { rec.estado = 'aprobado'; rec.respuesta = resp; }
+    admPermFilter();
+    toast('ok', '✅ Permiso aprobado');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+async function admRechazar(id) {
+  const resp = prompt('Motivo del rechazo (opcional):') || 'Permiso rechazado';
+  try {
+    await db.collection('permisos').doc(id).update({estado: 'rechazado', respuesta: resp});
+    const rec = permRecs.find(r => r.id === id);
+    if (rec) { rec.estado = 'rechazado'; rec.respuesta = resp; }
+    admPermFilter();
+    toast('inf', 'Permiso rechazado');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+async function admDelPerm(id) {
+  if (!confirm('¿Eliminar esta solicitud?')) return;
+  try {
+    await db.collection('permisos').doc(id).delete();
+    permRecs = permRecs.filter(r => r.id !== id);
+    admPermFilter();
+    toast('inf', '🗑 Solicitud eliminada');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+function mkPermBadge(e) {
+  const m = {pendiente:['b-pend','Pendiente'], aprobado:['b-aprov','Aprobado'], rechazado:['b-rech','Rechazado']};
+  const [c,l] = m[e] || ['b-pend','Pendiente'];
+  return `<span class="badge ${c}">${l}</span>`;
+}
 
 </script>
 </body>
