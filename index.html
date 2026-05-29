@@ -129,6 +129,7 @@ tbody tr:hover td{background:var(--paper2);}
 .b-out{background:var(--amber-l);color:#92400e;}.b-out::before{background:var(--amber);}
 .b-back{background:var(--green-l);color:#14532d;}.b-back::before{background:var(--green);}
 .b-late{background:var(--red-l);color:#7f1d1d;}.b-late::before{background:var(--red);}
+.b-sched{background:var(--purple-l);color:var(--purple);}.b-sched::before{background:var(--purple);}
 
 /* ── EMPLOYEE SCREEN ── */
 .hero{background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border-radius:var(--r);padding:1.5rem;color:white;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
@@ -144,8 +145,7 @@ tbody tr:hover td{background:var(--paper2);}
 @media(max-width:700px){.egrid2{grid-template-columns:1fr;}}
 
 /* ── ADMIN STATS ── */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem;}
-@media(max-width:600px){.stats{grid-template-columns:1fr 1fr;}}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.25rem;}
 .stat{background:var(--paper);border:1px solid var(--border);border-radius:var(--r);padding:.875rem 1rem;display:flex;align-items:center;gap:11px;box-shadow:var(--sh);}
 .sico{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;}
 .sn{font-size:22px;font-weight:800;color:var(--ink);line-height:1;}
@@ -300,7 +300,7 @@ tbody tr:hover td{background:var(--paper2);}
 
     <!-- EMPLOYEE TABS -->
     <div class="adm-tabs" style="margin-top:1.25rem;">
-      <button class="atab active" data-tab="sal" onclick="empTab('sal')">🚀 Salidas del Día</button>
+      <button class="atab active" data-tab="sal" onclick="empTab('sal')">🚀Personal en Campo</button>
       <button class="atab" data-tab="perm" onclick="empTab('perm')">📅 Permisos</button>
     </div>
 
@@ -323,9 +323,18 @@ tbody tr:hover td{background:var(--paper2);}
               </div>
               <input class="fi" id="f-lugar" placeholder="O escribe el destino..." />
             </div>
+            <div class="fg">
+              <label>Fecha de Salida *</label>
+              <div class="chips">
+                <span class="chip" onclick="sp3(0)">📅 Hoy</span>
+                <span class="chip" onclick="sp3(1)">📅 Mañana</span>
+                <span class="chip" onclick="sp3(2)">📅 Pasado</span>
+              </div>
+              <input class="fi" type="date" id="f-fecha" />
+            </div>
             <div class="fr">
               <div class="fg"><label>Hora salida *</label><input class="fi" type="time" id="f-sal" /></div>
-              <div class="fg"><label>Regreso esperado</label><input class="fi" type="time" id="f-reg" /></div>
+              <div class="fg"><label>Hora regreso est.</label><input class="fi" type="time" id="f-reg" /></div>
             </div>
             <div class="fg"><label>Motivo (opcional)</label><textarea class="fi" id="f-mot" placeholder="Breve descripción..."></textarea></div>
             <button class="btn btn-blue btn-full" id="btn-sal" onclick="empSalida()">🚀 Registrar mi salida</button>
@@ -334,10 +343,10 @@ tbody tr:hover td{background:var(--paper2);}
 
         <!-- Mis registros hoy -->
         <div class="card">
-          <div class="ch"><span class="ct">📋 Mis salidas de hoy</span></div>
+          <div class="ch"><span class="ct">📋 Mis Salidas (Hoy y Programadas)</span></div>
           <div class="tw">
             <table>
-              <thead><tr><th>Destino</th><th>Salida</th><th>Regr.Est.</th><th>Regr.Real</th><th>Duración</th><th>Estado</th></tr></thead>
+              <thead><tr><th>Fecha</th><th>Destino</th><th>Salida</th><th>Regr.Est.</th><th>Regr.Real</th><th>Duración</th><th>Estado</th></tr></thead>
               <tbody id="emp-tbody"></tbody>
             </table>
           </div>
@@ -350,10 +359,10 @@ tbody tr:hover td{background:var(--paper2);}
       <div class="egrid2">
         <!-- Formulario Permisos -->
         <div class="card" id="perm-card">
-        <div class="ch"><span class="ct">📅 Permisos de Días</span></div>
+        <div class="ch"><span class="ct">📅 Solicitar Permiso</span></div>
         <div class="cb">
           <div class="fg">
-            <label>Motivo del Permiso *</label>
+            <label>Tipo de Permiso *</label>
             <div class="chips">
               <span class="chip" onclick="sp2('Cita médica')">🏥 Médico</span>
               <span class="chip" onclick="sp2('Asunto personal')">👤 Personal</span>
@@ -361,9 +370,22 @@ tbody tr:hover td{background:var(--paper2);}
               <span class="chip" onclick="sp2('Asunto familiar')">👨‍👩‍👧 Familiar</span>
               <span class="chip" onclick="sp2('Estudio/Académico')">🎓 Académico</span>
             </div>
-            <textarea class="fi" id="p-mot" placeholder="O describe el motivo..."></textarea>
+            <input class="fi" id="p-tipo" placeholder="O escribe el tipo de permiso..." />
           </div>
-          <div class="fg"><label>Fecha de Ausencia *</label><input class="fi" type="date" id="p-fecha" /></div>
+          <div class="fg">
+            <label>Fecha de Ausencia *</label>
+            <div class="chips">
+              <span class="chip" onclick="sp4(0)">📅 Hoy</span>
+              <span class="chip" onclick="sp4(1)">📅 Mañana</span>
+              <span class="chip" onclick="sp4(2)">📅 Pasado</span>
+            </div>
+            <input class="fi" type="date" id="p-fecha" />
+          </div>
+          <div class="fr">
+            <div class="fg"><label>Hora salida *</label><input class="fi" type="time" id="p-sal" /></div>
+            <div class="fg"><label>Hora regreso est.</label><input class="fi" type="time" id="p-reg" /></div>
+          </div>
+          <div class="fg"><label>Descripción (opcional)</label><textarea class="fi" id="p-mot" placeholder="Breve descripción..."></textarea></div>
           <button class="btn btn-blue btn-full" id="btn-perm" onclick="empPermiso()">📅 Solicitar Permiso</button>
         </div>
       </div>
@@ -373,7 +395,7 @@ tbody tr:hover td{background:var(--paper2);}
           <div class="ch"><span class="ct">📋 Mis Permisos Solicitados</span></div>
           <div class="tw">
             <table>
-              <thead><tr><th>Fecha Ausencia</th><th>Motivo</th><th>Enviado</th><th>Estado</th><th>Respuesta Admin</th></tr></thead>
+              <thead><tr><th>Fecha</th><th>Tipo</th><th>Hora Sal.</th><th>Hora Reg.</th><th>Estado</th><th>Respuesta Admin</th></tr></thead>
               <tbody id="perm-emp-tbody"></tbody>
             </table>
           </div>
@@ -414,6 +436,7 @@ tbody tr:hover td{background:var(--paper2);}
       <div class="stat"><div class="sico" style="background:var(--amber-l);">🚶</div><div><div class="sn" id="st-out">0</div><div class="sl">Fuera</div></div></div>
       <div class="stat"><div class="sico" style="background:var(--green-l);">✅</div><div><div class="sn" id="st-bk">0</div><div class="sl">Regresaron</div></div></div>
       <div class="stat"><div class="sico" style="background:var(--red-l);">⏰</div><div><div class="sn" id="st-lt">0</div><div class="sl">Con retraso</div></div></div>
+      <div class="stat"><div class="sico" style="background:var(--purple-l);">📅</div><div><div class="sn" id="st-sched">0</div><div class="sl">Programadas</div></div></div>
     </div>
 
     <!-- PANEL GESTIONAR EMPLEADOS -->
@@ -497,6 +520,34 @@ tbody tr:hover td{background:var(--paper2);}
       </div>
     </div>
 
+    <!-- SALIDAS PROGRAMADAS -->
+    <div class="card" style="margin-top:1.25rem;">
+      <div class="ch">
+        <span class="ct">📅 Salidas Programadas <span class="count-b" id="sched-cnt" style="display:none;">0</span></span>
+        <button class="btn btn-og btn-xs" onclick="setupAdmSchedRT()">🔄</button>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Empleado</th><th>Fecha</th><th>Destino</th><th>Hora</th><th>Regr.Est.</th><th>Motivo</th><th></th></tr></thead>
+          <tbody id="sched-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PERMISOS PROGRAMADOS -->
+    <div class="card" style="margin-top:1.25rem;">
+      <div class="ch">
+        <span class="ct">📋 Permisos Programados <span class="count-b" id="sched-perm-cnt" style="display:none;">0</span></span>
+        <button class="btn btn-og btn-xs" onclick="setupAdmSchedPermRT()">🔄</button>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Empleado</th><th>Fecha</th><th>Tipo</th><th>Hora Sal.</th><th>Hora Reg.</th><th>Estado</th><th>Observación</th><th>Acciones</th></tr></thead>
+          <tbody id="sched-perm-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- PANEL PERMISOS -->
     <div class="card" id="perm-panel" style="display:none;margin-top:1.25rem;">
       <div class="ch">
@@ -513,7 +564,7 @@ tbody tr:hover td{background:var(--paper2);}
       </div>
       <div class="tw">
         <table>
-          <thead><tr><th>Empleado</th><th>Fecha Ausencia</th><th>Motivo</th><th>Solicitado</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <thead><tr><th>Empleado</th><th>Fecha Ausencia</th><th>Motivo</th><th>Solicitado</th><th>Estado</th><th>Observación</th><th>Acciones</th></tr></thead>
           <tbody id="perm-adm-tbody"></tbody>
         </table>
       </div>
@@ -573,7 +624,7 @@ tbody tr:hover td{background:var(--paper2);}
         </div>
         <div class="tw">
           <table>
-            <thead><tr><th>Empleado</th><th>Fecha Ausencia</th><th>Motivo</th><th>Solicitado</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Empleado</th><th>Fecha Ausencia</th><th>Motivo</th><th>Solicitado</th><th>Estado</th><th>Observación</th><th>Acciones</th></tr></thead>
             <tbody id="hist-perm-tbody"></tbody>
           </table>
         </div>
@@ -658,7 +709,9 @@ let permRecs     = [];
 let permUnsub    = null;
 let histSalAll   = [];
 let histSalRecs  = [];
-let histPermRecs = [];
+let histPermRecs  = [];
+let schedRecs     = [];
+let schedPermRecs = [];
 
 // ══════════════════════════════════════════
 // 4. RELOJ
@@ -675,10 +728,13 @@ setInterval(tick, 1000); tick();
   ge('f-sal').value = `${p(n.getHours())}:${p(n.getMinutes())}`;
   const l = new Date(n.getTime() + 3600000);
   ge('f-reg').value = `${p(l.getHours())}:${p(l.getMinutes())}`;
-  ge('a-date').valueAsDate = new Date();
+  ge('a-date').value = hoy();
+  ge('f-fecha').value = hoy();
+  ge('p-sal').value = `${p(n.getHours())}:${p(n.getMinutes())}`;
+  ge('p-reg').value = `${p(l.getHours())}:${p(l.getMinutes())}`;
   const y = n.getFullYear(), mo = String(n.getMonth()+1).padStart(2,'0');
   ge('hs-desde').value = `${y}-${mo}-01`;
-  ge('hs-hasta').valueAsDate = new Date();
+  ge('hs-hasta').value = hoy();
 })();
 
 // ══════════════════════════════════════════
@@ -756,6 +812,8 @@ function doLogin() {
     admLoad();
     setupAdmRT();
     setupAdmPermRT();
+    setupAdmSchedRT();
+    setupAdmSchedPermRT();
   } else {
     const idx = ge('emp-sel').value;
     if (idx === '') { toast('err', '⚠️ Selecciona tu nombre'); return; }
@@ -769,7 +827,7 @@ function doLogin() {
     empLoad();
     setupEmpRT();
     setupEmpPermRT();
-    ge('p-fecha').valueAsDate = new Date();
+    ge('p-fecha').value = hoy();
   }
 }
 
@@ -779,10 +837,11 @@ function doLogin() {
 function setupEmpRT() {
   if (empUnsub) empUnsub();
   empUnsub = db.collection('salidas')
-    .where('fecha',  '==', hoy())
     .where('nombre', '==', currentUser.nombre)
     .onSnapshot(snap => {
-      const recs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>b.ts-a.ts);
+      const recs = snap.docs.map(d => ({id: d.id, ...d.data()}))
+        .filter(r => r.fecha >= hoy())
+        .sort((a,b) => a.fecha.localeCompare(b.fecha) || a.ts - b.ts);
       chkLate(recs);
       empRender(recs);
     });
@@ -790,18 +849,19 @@ function setupEmpRT() {
 
 function empLoad() {
   db.collection('salidas')
-    .where('fecha',  '==', hoy())
     .where('nombre', '==', currentUser.nombre)
     .get()
     .then(snap => {
-      const recs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>b.ts-a.ts);
+      const recs = snap.docs.map(d => ({id: d.id, ...d.data()}))
+        .filter(r => r.fecha >= hoy())
+        .sort((a,b) => a.fecha.localeCompare(b.fecha) || a.ts - b.ts);
       chkLate(recs);
       empRender(recs);
     });
 }
 
 function empRender(recs) {
-  const active = recs.find(r => r.estado === 'out' || r.estado === 'late');
+  const active = recs.find(r => r.fecha === hoy() && (r.estado === 'out' || r.estado === 'late'));
   const aoEl = ge('ao'), fc = ge('fcard');
   if (active) {
     aoEl.style.display = 'block';
@@ -817,23 +877,28 @@ function empRender(recs) {
   }
   const tb = ge('emp-tbody');
   if (!recs.length) {
-    tb.innerHTML = `<tr><td colspan="6"><div class="empty">
-      <div class="empty-ico">📭</div><h3>Sin salidas hoy</h3>
-      <p>Registra tu primera salida del día</p></div></td></tr>`;
+    tb.innerHTML = `<tr><td colspan="7"><div class="empty">
+      <div class="empty-ico">📭</div><h3>Sin salidas registradas</h3>
+      <p>Registra una salida o programa una futura</p></div></td></tr>`;
     return;
   }
-  tb.innerHTML = recs.map(r => `<tr>
-    <td style="font-weight:500;">${r.lugar}</td>
-    <td><span class="mono">${r.horaSalida}</span></td>
-    <td><span class="mono">${r.horaRegresoEsperada || '—'}</span></td>
-    <td><span class="mono">${r.horaRegresoReal || '—'}</span></td>
-    <td>${calcDur(r.horaSalida, r.horaRegresoReal) ? `<span class="dur">${calcDur(r.horaSalida, r.horaRegresoReal)}</span>` : '—'}</td>
-    <td>${mkBadge(r.estado)}</td>
-  </tr>`).join('');
+  tb.innerHTML = recs.map(r => {
+    const esFutura = r.fecha > hoy();
+    const badge = esFutura ? '<span class="badge b-sched">Programada</span>' : mkBadge(r.estado);
+    return `<tr>
+      <td><span class="mono" style="font-size:11px;${esFutura ? 'color:var(--purple);font-weight:600;' : ''}">${r.fecha}</span></td>
+      <td style="font-weight:500;">${r.lugar}</td>
+      <td><span class="mono">${r.horaSalida}</span></td>
+      <td><span class="mono">${r.horaRegresoEsperada || '—'}</span></td>
+      <td><span class="mono">${r.horaRegresoReal || '—'}</span></td>
+      <td>${calcDur(r.horaSalida, r.horaRegresoReal) ? `<span class="dur">${calcDur(r.horaSalida, r.horaRegresoReal)}</span>` : '—'}</td>
+      <td>${badge}</td>
+    </tr>`;
+  }).join('');
 }
 
 async function empSalida() {
-  const lugar = gv('f-lugar'), sal = gv('f-sal');
+  const lugar = gv('f-lugar'), sal = gv('f-sal'), fecha = gv('f-fecha') || hoy();
   if (!lugar) { toast('err', '⚠️ Ingresa el destino'); return; }
   if (!sal)   { toast('err', '⚠️ Ingresa la hora de salida'); return; }
   const rec = {
@@ -843,22 +908,26 @@ async function empSalida() {
     horaRegresoReal: null,
     motivo: gv('f-mot'),
     estado: 'out',
-    fecha: hoy(),
+    fecha,
     ts: Date.now()
   };
   const btn = ge('btn-sal');
   btn.innerHTML = '<span class="spin"></span> Guardando...'; btn.disabled = true;
   try {
     await db.collection('salidas').add(rec);
-    toast('ok', '✅ Salida registrada correctamente');
+    const esFutura = fecha > hoy();
+    toast('ok', esFutura ? `📅 Salida programada para ${fecha}` : '✅ Salida registrada correctamente');
     ge('f-lugar').value = ''; ge('f-mot').value = '';
+    ge('f-fecha').value = hoy();
     const n = new Date(), p = h => String(h).padStart(2,'0');
     ge('f-sal').value = `${p(n.getHours())}:${p(n.getMinutes())}`;
   } catch(e) { toast('err', '❌ ' + e.message); }
   btn.innerHTML = '🚀 Registrar mi salida'; btn.disabled = false;
 }
 
-function sp(p) { ge('f-lugar').value = p; }
+function sp(p)  { ge('f-lugar').value = p; }
+function sp3(d) { const f = new Date(); f.setDate(f.getDate() + d); ge('f-fecha').value = `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}-${String(f.getDate()).padStart(2,'0')}`; }
+function sp4(d) { const f = new Date(); f.setDate(f.getDate() + d); ge('p-fecha').value = `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}-${String(f.getDate()).padStart(2,'0')}`; }
 
 function openEmpReg() {
   ge('mer-h').value = nowT(); ge('mer-o').value = '';
@@ -1181,7 +1250,145 @@ function toast(type, msg) {
 }
 
 // ══════════════════════════════════════════
-// 15. TABS EMPLEADO
+// 15. SALIDAS PROGRAMADAS (ADMIN)
+// ══════════════════════════════════════════
+function setupAdmSchedRT() {
+  db.collection('salidas')
+    .where('fecha', '>', hoy())
+    .get()
+    .then(snap => {
+      schedRecs = snap.docs.map(d => ({id: d.id, ...d.data()}))
+        .sort((a,b) => a.fecha.localeCompare(b.fecha) || a.ts - b.ts);
+      renderSchedRecs();
+    })
+    .catch(e => toast('err', '❌ Programadas: ' + e.message));
+
+  db.collection('salidas')
+    .where('fecha', '>', hoy())
+    .onSnapshot(snap => {
+      schedRecs = snap.docs.map(d => ({id: d.id, ...d.data()}))
+        .sort((a,b) => a.fecha.localeCompare(b.fecha) || a.ts - b.ts);
+      renderSchedRecs();
+    }, err => toast('err', '❌ Programadas RT: ' + err.message));
+}
+
+function renderSchedRecs() {
+  const cnt = ge('sched-cnt');
+  cnt.textContent = schedRecs.length;
+  cnt.style.display = schedRecs.length ? 'inline' : 'none';
+  ge('st-sched').textContent = schedRecs.length;
+
+  const tb = ge('sched-tbody');
+  if (!schedRecs.length) {
+    tb.innerHTML = `<tr><td colspan="7"><div class="empty">
+      <div class="empty-ico">📅</div><h3>Sin salidas programadas</h3>
+      <p>No hay salidas agendadas para fechas futuras</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = schedRecs.map(r => `<tr>
+    <td><div style="display:flex;align-items:center;">
+      <div class="ava">${ini(r.nombre)}</div>
+      <span style="font-weight:600;">${r.nombre}</span>
+    </div></td>
+    <td><span class="mono" style="color:var(--purple);font-weight:700;">${r.fecha}</span></td>
+    <td style="font-weight:500;">${r.lugar}</td>
+    <td><span class="mono">${r.horaSalida}</span></td>
+    <td><span class="mono">${r.horaRegresoEsperada || '—'}</span></td>
+    <td style="font-size:12px;color:var(--ink3);">${r.motivo || '—'}</td>
+    <td><button class="btn btn-red btn-xs" onclick="admDel('${r.id}')">🗑</button></td>
+  </tr>`).join('');
+}
+
+// ══════════════════════════════════════════
+// 15b. PERMISOS PROGRAMADOS (ADMIN)
+// ══════════════════════════════════════════
+function setupAdmSchedPermRT() {
+  db.collection('permisos')
+    .where('fechaAusencia', '>', hoy())
+    .get()
+    .then(snap => {
+      schedPermRecs = snap.docs.map(d => ({id: d.id, ...d.data()}))
+        .sort((a,b) => a.fechaAusencia.localeCompare(b.fechaAusencia) || b.ts - a.ts);
+      renderSchedPerms();
+    })
+    .catch(e => toast('err', '❌ Permisos programados: ' + e.message));
+
+  db.collection('permisos')
+    .where('fechaAusencia', '>', hoy())
+    .onSnapshot(snap => {
+      schedPermRecs = snap.docs.map(d => ({id: d.id, ...d.data()}))
+        .sort((a,b) => a.fechaAusencia.localeCompare(b.fechaAusencia) || b.ts - a.ts);
+      renderSchedPerms();
+    }, err => toast('err', '❌ Permisos prog. RT: ' + err.message));
+}
+
+function renderSchedPerms() {
+  const cnt = ge('sched-perm-cnt');
+  cnt.textContent = schedPermRecs.length;
+  cnt.style.display = schedPermRecs.length ? 'inline' : 'none';
+
+  const tb = ge('sched-perm-tbody');
+  if (!schedPermRecs.length) {
+    tb.innerHTML = `<tr><td colspan="7"><div class="empty">
+      <div class="empty-ico">📋</div><h3>Sin permisos programados</h3>
+      <p>No hay permisos solicitados para fechas futuras</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = schedPermRecs.map(r => {
+    const acts = r.estado === 'pendiente'
+      ? `<button class="btn btn-green btn-xs" onclick="schedPermAprobar('${r.id}')">✅ Aprobar</button>
+         <button class="btn btn-red btn-xs" onclick="schedPermRechazar('${r.id}')">✗ Rechazar</button>`
+      : `<button class="btn btn-og btn-xs" onclick="schedPermDel('${r.id}')">🗑</button>`;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;">
+        <div class="ava">${ini(r.nombre)}</div>
+        <span style="font-weight:600;">${r.nombre}</span>
+      </div></td>
+      <td><span class="mono" style="color:var(--purple);font-weight:700;">${r.fechaAusencia}</span></td>
+      <td style="font-weight:500;">${r.motivo}${r.descripcion ? `<div style="font-size:11px;color:var(--ink3);">${r.descripcion}</div>` : ''}</td>
+      <td><span class="mono">${r.horaSalida || '—'}</span></td>
+      <td><span class="mono">${r.horaRegresoEsperada || '—'}</span></td>
+      <td>${mkPermBadge(r.estado)}</td>
+      <td style="font-size:12px;color:var(--ink3);">${r.respuesta || '—'}</td>
+      <td><div style="display:flex;gap:5px;">${acts}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+async function schedPermAprobar(id) {
+  const resp = prompt('Observación de aprobación (opcional):') || 'Permiso aprobado';
+  try {
+    await db.collection('permisos').doc(id).update({estado: 'aprobado', respuesta: resp});
+    const r = schedPermRecs.find(x => x.id === id);
+    if (r) { r.estado = 'aprobado'; r.respuesta = resp; }
+    renderSchedPerms();
+    toast('ok', '✅ Permiso aprobado');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+async function schedPermRechazar(id) {
+  const resp = prompt('Motivo del rechazo (opcional):') || 'Permiso rechazado';
+  try {
+    await db.collection('permisos').doc(id).update({estado: 'rechazado', respuesta: resp});
+    const r = schedPermRecs.find(x => x.id === id);
+    if (r) { r.estado = 'rechazado'; r.respuesta = resp; }
+    renderSchedPerms();
+    toast('inf', 'Permiso rechazado');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+async function schedPermDel(id) {
+  if (!confirm('¿Eliminar esta solicitud?')) return;
+  try {
+    await db.collection('permisos').doc(id).delete();
+    schedPermRecs = schedPermRecs.filter(r => r.id !== id);
+    renderSchedPerms();
+    toast('inf', '🗑 Solicitud eliminada');
+  } catch(e) { toast('err', '❌ ' + e.message); }
+}
+
+// ══════════════════════════════════════════
+// 16. TABS EMPLEADO
 // ══════════════════════════════════════════
 function empTab(tab) {
   ['sal','perm'].forEach(t => {
@@ -1291,7 +1498,7 @@ function histPermFilter() {
   const f  = st ? histPermRecs.filter(r => r.estado === st) : histPermRecs;
   const tb = ge('hist-perm-tbody');
   if (!f.length) {
-    tb.innerHTML = `<tr><td colspan="6"><div class="empty">
+    tb.innerHTML = `<tr><td colspan="7"><div class="empty">
       <div class="empty-ico">📅</div><h3>Sin permisos</h3>
       <p>No hay solicitudes para el filtro seleccionado</p></div></td></tr>`;
     return;
@@ -1310,13 +1517,14 @@ function histPermFilter() {
       <td style="font-weight:500;">${r.motivo}</td>
       <td><span class="mono" style="font-size:11px;">${new Date(r.ts).toLocaleDateString('es-MX')}</span></td>
       <td>${mkPermBadge(r.estado)}</td>
+      <td style="font-size:12px;color:var(--ink3);">${r.respuesta || '—'}</td>
       <td><div style="display:flex;gap:5px;">${acts}</div></td>
     </tr>`;
   }).join('');
 }
 
 async function histPermAprobar(id) {
-  const resp = 'Permiso aprobado por el administrador';
+  const resp = prompt('Observación de aprobación (opcional):') || 'Permiso aprobado';
   try {
     await db.collection('permisos').doc(id).update({estado: 'aprobado', respuesta: resp});
     [histPermRecs, permRecs].forEach(arr => {
@@ -1358,7 +1566,7 @@ setInterval(() => { chkLate(admRecs); if (ge('sc-adm').classList.contains('activ
 // ══════════════════════════════════════════
 // 14. PERMISOS DE DÍAS
 // ══════════════════════════════════════════
-function sp2(v) { ge('p-mot').value = v; }
+function sp2(v) { ge('p-tipo').value = v; }
 
 // ── Empleado ──
 function setupEmpPermRT() {
@@ -1381,29 +1589,35 @@ function renderEmpPermisos(recs) {
   }
   tb.innerHTML = recs.map(r => `<tr>
     <td><span class="mono">${r.fechaAusencia}</span></td>
-    <td style="font-weight:500;">${r.motivo}</td>
-    <td><span class="mono" style="font-size:11px;">${new Date(r.ts).toLocaleDateString('es-MX')}</span></td>
+    <td style="font-weight:500;">${r.motivo}${r.descripcion ? `<div style="font-size:11px;color:var(--ink3);">${r.descripcion}</div>` : ''}</td>
+    <td><span class="mono">${r.horaSalida || '—'}</span></td>
+    <td><span class="mono">${r.horaRegresoEsperada || '—'}</span></td>
     <td>${mkPermBadge(r.estado)}</td>
     <td style="font-size:12px;color:var(--ink3);">${r.respuesta || '—'}</td>
   </tr>`).join('');
 }
 
 async function empPermiso() {
-  const fecha = gv('p-fecha'), motivo = gv('p-mot');
-  if (!fecha)  { toast('err', '⚠️ Selecciona la fecha de ausencia'); return; }
-  if (!motivo) { toast('err', '⚠️ Ingresa el motivo del permiso'); return; }
+  const fecha = gv('p-fecha'), tipo = gv('p-tipo'), sal = gv('p-sal');
+  if (!fecha) { toast('err', '⚠️ Selecciona la fecha de ausencia'); return; }
+  if (!tipo)  { toast('err', '⚠️ Ingresa el tipo de permiso'); return; }
+  if (!sal)   { toast('err', '⚠️ Ingresa la hora de salida'); return; }
   const btn = ge('btn-perm');
   btn.innerHTML = '<span class="spin"></span> Enviando...'; btn.disabled = true;
   try {
     await db.collection('permisos').add({
       nombre: currentUser.nombre,
       fechaAusencia: fecha,
-      motivo,
+      motivo: tipo,
+      descripcion: gv('p-mot') || null,
+      horaSalida: sal,
+      horaRegresoEsperada: gv('p-reg') || null,
       estado: 'pendiente',
       respuesta: null,
       ts: Date.now()
     });
     toast('ok', '✅ Solicitud de permiso enviada');
+    ge('p-tipo').value = '';
     ge('p-mot').value = '';
   } catch(e) { toast('err', '❌ ' + e.message); }
   btn.innerHTML = '📅 Solicitar Permiso'; btn.disabled = false;
@@ -1444,7 +1658,7 @@ function admPermFilter() {
   const f = st ? permRecs.filter(r => r.estado === st) : permRecs;
   const tb = ge('perm-adm-tbody');
   if (!f.length) {
-    tb.innerHTML = `<tr><td colspan="6"><div class="empty">
+    tb.innerHTML = `<tr><td colspan="7"><div class="empty">
       <div class="empty-ico">📅</div><h3>Sin permisos</h3>
       <p>No hay solicitudes para el filtro seleccionado</p></div></td></tr>`;
     return;
@@ -1463,13 +1677,14 @@ function admPermFilter() {
       <td style="font-weight:500;">${r.motivo}</td>
       <td><span class="mono" style="font-size:11px;">${new Date(r.ts).toLocaleDateString('es-MX')}</span></td>
       <td>${mkPermBadge(r.estado)}</td>
+      <td style="font-size:12px;color:var(--ink3);">${r.respuesta || '—'}</td>
       <td><div style="display:flex;gap:5px;">${acts}</div></td>
     </tr>`;
   }).join('');
 }
 
 async function admAprobar(id) {
-  const resp = 'Permiso aprobado por el administrador';
+  const resp = prompt('Observación de aprobación (opcional):') || 'Permiso aprobado';
   try {
     await db.collection('permisos').doc(id).update({estado: 'aprobado', respuesta: resp});
     const rec = permRecs.find(r => r.id === id);
