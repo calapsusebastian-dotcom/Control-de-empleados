@@ -1741,6 +1741,23 @@
       return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
     }
 
+    function ayerStr() {
+      const n = new Date();
+      n.setDate(n.getDate() - 1);
+      return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+    }
+
+    // ¿Esta asignación cuenta como "de hoy"? Incluye turnos de ayer que
+    // cruzan medianoche (horaFin < horaInicio) y siguen dentro de su horario.
+    function esDeHoy(a) {
+      if (a.fecha === todayStr()) return true;
+      if (a.fecha === ayerStr()) {
+        const s = toMin(a.horaInicio), e = toMin(a.horaFin);
+        return s > e && nowMin() < e;
+      }
+      return false;
+    }
+
     // Detecta si dos turnos se solapan, considerando turnos que cruzan medianoche
     function turnosSeSuperponen(s_a, e_a, s_b, e_b) {
       const a_cruza = s_a > e_a;
@@ -1758,39 +1775,38 @@
     }
 
     function asigStatus(a) {
-      if (a.fecha && a.fecha < todayStr()) return 'terminada';
+      const hoy = todayStr();
+      if (a.fecha && a.fecha < hoy) {
+        // Turno de ayer que cruza medianoche: puede seguir en curso.
+        if (a.fecha === ayerStr()) {
+          const s = toMin(a.horaInicio), e = toMin(a.horaFin);
+          if (s > e && nowMin() < e) return 'en-curso';
+        }
+        return 'terminada';
+      }
       const now = nowMin();
       const s = toMin(a.horaInicio);
       const e = toMin(a.horaFin);
       const cruza = s > e;
-      const enRango = cruza ? (now >= s || now < e) : (now >= s && now < e);
-      if (cruza) {
-        if (now >= s) return 'en-curso';
-        if (now < e) return 'en-curso';
-        return 'pendiente';
-      } else {
-        if (now < s) return 'pendiente';
-        if (now >= s && now < e) return 'en-curso';
-        return 'terminada';
-      }
+      if (cruza) return (now >= s || now < e) ? 'en-curso' : 'pendiente';
+      if (now < s) return 'pendiente';
+      if (now < e) return 'en-curso';
+      return 'terminada';
     }
 
     // Para una tarea: dame la asignación de hoy más relevante
     function getActiveAsig(tareaId) {
-      const hoy = todayStr();
       const now = nowMin();
       const list = asignaciones
-        .filter(a => a.tarea === tareaId && a.fecha === hoy)
+        .filter(a => a.tarea === tareaId && esDeHoy(a))
+        .map(a => ({ ...a, _st: asigStatus(a) }))
         .sort((a,b) => toMin(a.horaInicio) - toMin(b.horaInicio));
 
-      const activa = list.find(a => {
-        const s = toMin(a.horaInicio), e = toMin(a.horaFin);
-        return now >= s && now < e;
-      });
-      if (activa) return { ...activa, _st:'en-curso' };
+      const activa = list.find(a => a._st === 'en-curso');
+      if (activa) return activa;
 
-      const proxima = list.find(a => toMin(a.horaInicio) > now);
-      if (proxima) return { ...proxima, _st:'pendiente' };
+      const proxima = list.find(a => a._st === 'pendiente' && toMin(a.horaInicio) > now);
+      if (proxima) return proxima;
 
       const ult = list[list.length-1];
       if (ult) return { ...ult, _st:'terminada' };
@@ -1799,23 +1815,11 @@
 
     // ¿Está ocupada la persona en este momento?
     function personaBusy(personaId) {
-      const now = nowMin(), hoy = todayStr();
-      return asignaciones.some(a => {
-        if (a.personaId !== personaId || a.fecha !== hoy) return false;
-        const s = toMin(a.horaInicio), e = toMin(a.horaFin);
-        const cruza = s > e;
-        return cruza ? (now >= s || now < e) : (now >= s && now < e);
-      });
+      return asignaciones.some(a => a.personaId === personaId && esDeHoy(a) && asigStatus(a) === 'en-curso');
     }
 
     function personaCurTask(personaId) {
-      const now = nowMin(), hoy = todayStr();
-      return asignaciones.find(a => {
-        if (a.personaId !== personaId || a.fecha !== hoy) return false;
-        const s = toMin(a.horaInicio), e = toMin(a.horaFin);
-        const cruza = s > e;
-        return cruza ? (now >= s || now < e) : (now >= s && now < e);
-      });
+      return asignaciones.find(a => a.personaId === personaId && esDeHoy(a) && asigStatus(a) === 'en-curso');
     }
 
     // Tiempo restante formateado
@@ -1903,7 +1907,7 @@
         const ct = busy ? personaCurTask(p.id) : null;
         const tarea = ct ? tareas.find(t => t.id === ct.tarea) : null;
         const dotColor = busy ? '#F59E0B' : '#22C55E';
-        const hoyCount = asignaciones.filter(a => a.personaId === p.id && a.fecha === todayStr()).length;
+        const hoyCount = asignaciones.filter(a => a.personaId === p.id && esDeHoy(a)).length;
         return `
           <div class="p-card" style="border-left-color:${p.color}66" onclick="openPersonTasks('${p.id}')">
             <div class="p-av" style="background:${p.color};box-shadow:0 0 0 2px ${p.color}44,0 2px 8px ${p.color}22">
@@ -2003,8 +2007,7 @@
     }
 
     function renderStats() {
-      const hoy = todayStr();
-      const asigHoy = asignaciones.filter(a => a.fecha === hoy);
+      const asigHoy = asignaciones.filter(esDeHoy);
       const enCurso = asigHoy.filter(a => asigStatus(a)==='en-curso').length;
       const libres = personas.filter(p => !personaBusy(p.id)).length;
       const ocupados = personas.filter(p => personaBusy(p.id)).length;
@@ -2255,8 +2258,7 @@
       if (!p) return;
 
       const busy = personaBusy(p.id);
-      const hoy = todayStr();
-      const totalHoy = asignaciones.filter(a => a.personaId === personId && a.fecha === hoy).length;
+      const totalHoy = asignaciones.filter(a => a.personaId === personId && esDeHoy(a)).length;
 
       const ptAv = document.getElementById('ptAvatar');
       ptAv.style.background = p.color;
@@ -2273,9 +2275,8 @@
     }
 
     function renderPersonTasks(personId) {
-      const hoy = todayStr();
       const list = asignaciones
-        .filter(a => a.personaId === personId && a.fecha === hoy)
+        .filter(a => a.personaId === personId && esDeHoy(a))
         .sort((a,b) => toMin(a.horaInicio) - toMin(b.horaInicio));
 
       const el = document.getElementById('ptTaskList');
@@ -2772,9 +2773,8 @@
       });
 
       // Tareas
-      const hoy = todayStr();
       const list = asignaciones
-        .filter(a => a.personaId === personaId && a.fecha === hoy)
+        .filter(a => a.personaId === personaId && esDeHoy(a))
         .sort((a,b) => toMin(a.horaInicio) - toMin(b.horaInicio));
 
       const el = document.getElementById('empTaskList');
@@ -2889,11 +2889,9 @@
       const boardEl = document.getElementById('boardView');
       if (!boardEl.classList.contains('show')) return;
 
-      const hoy = todayStr();
-
       // Stats header
       const ocupados = personas.filter(p => personaBusy(p.id)).length;
-      const enCursoN = asignaciones.filter(a => a.fecha === hoy && asigStatus(a) === 'en-curso').length;
+      const enCursoN = asignaciones.filter(a => esDeHoy(a) && asigStatus(a) === 'en-curso').length;
       document.getElementById('boardStats').innerHTML = `
         <div class="board-hstat">👥 <strong>${personas.length}</strong> personas</div>
         <div class="board-hstat">🟠 <strong>${ocupados}</strong> ocupados</div>
@@ -2905,7 +2903,7 @@
 
       // Build card data per task
       const cards = tareas.map(t => {
-        const all = asignaciones.filter(a => a.tarea === t.id && a.fecha === hoy);
+        const all = asignaciones.filter(a => a.tarea === t.id && esDeHoy(a));
         const activos  = all.filter(a => asigStatus(a) === 'en-curso');
         const proximos = all.filter(a => asigStatus(a) === 'pendiente')
                             .sort((a,b) => toMin(a.horaInicio) - toMin(b.horaInicio));
